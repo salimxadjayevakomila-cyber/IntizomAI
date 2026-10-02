@@ -29,6 +29,8 @@ import {
   Zap,
 } from 'lucide-react'
 
+import { useLanguage } from '@/contexts/language-context'
+
 type TabKey = 'weekly' | 'macros' | 'insights'
 
 interface WeeklyDataItem {

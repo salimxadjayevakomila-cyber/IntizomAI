@@ -11,6 +11,7 @@ import {
   Zap,
   LucideIcon,
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/language-context'
 
 export interface ActivityLogItem {
   id?: string

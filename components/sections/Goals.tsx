@@ -19,6 +19,8 @@ import {
   Zap,
 } from 'lucide-react'
 
+import { useLanguage } from '@/contexts/language-context'
+
 type Goals = {
   currentWeight: number
   goalWeight: number
@@ -125,6 +127,7 @@ function Stepper({
 }
 
 export default function GoalsSection() {
+  const { t } = useLanguage()
   const [goals, setGoals] = useState<Goals>(defaultGoals)
   const [draft, setDraft] = useState<Goals>(defaultGoals)
   const [editing, setEditing] = useState(false)
@@ -150,25 +153,52 @@ export default function GoalsSection() {
     setEditing(false)
   }
 
+  const MACROS = [
+    {
+      key: 'protein' as const,
+      label: t('goals.protein'),
+      unit: 'g',
+      max: 200,
+      color: 'bg-emerald-400',
+      glow: 'rgba(52,211,153,0.4)',
+    },
+    {
+      key: 'carbs' as const,
+      label: t('goals.carbs'),
+      unit: 'g',
+      max: 300,
+      color: 'bg-sky-400',
+      glow: 'rgba(56,189,248,0.4)',
+    },
+    {
+      key: 'fat' as const,
+      label: t('goals.fat'),
+      unit: 'g',
+      max: 100,
+      color: 'bg-amber-400',
+      glow: 'rgba(251,191,36,0.4)',
+    },
+  ]
+
   return (
     <div className="mx-auto max-w-[1080px]">
       {/* Header */}
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-            <Target className="size-3.5" /> Personal goals
+            <Target className="size-3.5" /> {t('goals.badge')}
           </div>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
-            Your Goals
+            {t('goals.title')}
           </h1>
           <p className="mt-2 text-sm text-slate-400">
-            Set personalized targets for weight, nutrition, and daily activity.
+            {t('goals.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {saved && (
             <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-3 py-2 text-xs font-semibold text-emerald-300 transition">
-              <Check className="size-3.5" /> Saved
+              <Check className="size-3.5" /> {t('goals.saved')}
             </span>
           )}
           {editing ? (
@@ -178,14 +208,14 @@ export default function GoalsSection() {
                 onClick={cancel}
                 className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:text-white"
               >
-                Cancel
+                {t('goals.cancel')}
               </button>
               <button
                 type="button"
                 onClick={save}
                 className="flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.25)] transition hover:bg-emerald-300"
               >
-                <Save className="size-4" /> Save goals
+                <Save className="size-4" /> {t('goals.save')}
               </button>
             </>
           ) : (
@@ -197,7 +227,7 @@ export default function GoalsSection() {
               }}
               className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/20"
             >
-              <Pencil className="size-4" /> Edit goals
+              <Pencil className="size-4" /> {t('goals.edit')}
             </button>
           )}
         </div>
@@ -211,29 +241,29 @@ export default function GoalsSection() {
               <Scale className="size-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Target weight tracker</h2>
+              <h2 className="text-lg font-semibold text-white">{t('goals.targetWeightTracker')}</h2>
               <p className="mt-0.5 text-sm text-slate-400">
-                Progress from {goals.startWeight} kg to {goals.goalWeight} kg
+                {t('goals.progressFrom')} {goals.startWeight} kg {t('goals.to')} {goals.goalWeight} kg
               </p>
             </div>
           </div>
           <div className="flex gap-6">
             <div>
-              <p className="text-xs text-slate-500">Current</p>
+              <p className="text-xs text-slate-500">{t('goals.current')}</p>
               <p className="mt-1 text-2xl font-semibold text-white">
                 {goals.currentWeight}
                 <span className="ml-1 text-sm text-slate-400">kg</span>
               </p>
             </div>
             <div className="border-l border-slate-700 pl-6">
-              <p className="text-xs text-slate-500">Goal</p>
+              <p className="text-xs text-slate-500">{t('goals.goal')}</p>
               <p className="mt-1 text-2xl font-semibold text-emerald-300">
                 {goals.goalWeight}
                 <span className="ml-1 text-sm text-emerald-400/70">kg</span>
               </p>
             </div>
             <div className="border-l border-slate-700 pl-6">
-              <p className="text-xs text-slate-500">Remaining</p>
+              <p className="text-xs text-slate-500">{t('goals.remaining')}</p>
               <p className="mt-1 text-2xl font-semibold text-white">
                 {remaining.toFixed(1)}
                 <span className="ml-1 text-sm text-slate-400">kg</span>
@@ -247,7 +277,7 @@ export default function GoalsSection() {
           <div className="mb-2 flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 text-slate-400">
               <TrendingUp className="size-3.5 text-emerald-400" />
-              {weightLost > 0 ? `${weightLost.toFixed(1)} kg lost` : 'Just started'}
+              {weightLost > 0 ? `${weightLost.toFixed(1)} ${t('goals.kgLost')}` : t('goals.justStarted')}
             </span>
             <span className="font-semibold text-emerald-300">{Math.round(weightPct)}%</span>
           </div>
@@ -258,8 +288,8 @@ export default function GoalsSection() {
             />
           </div>
           <div className="mt-2 flex justify-between text-[11px] text-slate-500">
-            <span>Start · {goals.startWeight} kg</span>
-            <span>Goal · {goals.goalWeight} kg</span>
+            <span>{t('goals.start')} · {goals.startWeight} kg</span>
+            <span>{t('goals.goal')} · {goals.goalWeight} kg</span>
           </div>
         </div>
 
@@ -268,7 +298,7 @@ export default function GoalsSection() {
           <div className="mt-6 grid gap-4 border-t border-slate-800 pt-5 sm:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">
-                Current weight (kg)
+                {t('goals.currentWeightLabel')}
               </label>
               <input
                 type="number"
@@ -280,7 +310,7 @@ export default function GoalsSection() {
             </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">
-                Goal weight (kg)
+                {t('goals.goalWeightLabel')}
               </label>
               <input
                 type="number"
@@ -302,9 +332,9 @@ export default function GoalsSection() {
               <Flame className="size-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Daily macro targets</h2>
+              <h2 className="text-lg font-semibold text-white">{t('goals.dailyMacroTargets')}</h2>
               <p className="mt-0.5 text-sm text-slate-400">
-                Calorie and macronutrient goals for each day
+                {t('goals.macroSubtitle')}
               </p>
             </div>
           </div>
@@ -312,7 +342,7 @@ export default function GoalsSection() {
             type="button"
             className="hidden items-center gap-1 text-xs font-semibold text-slate-400 sm:flex"
           >
-            Daily <ChevronDown className="size-3" />
+            {t('goals.daily')} <ChevronDown className="size-3" />
           </button>
         </div>
 
@@ -323,7 +353,7 @@ export default function GoalsSection() {
               <Zap className="size-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Daily calorie goal</p>
+              <p className="text-xs text-slate-500">{t('goals.dailyCalorieGoal')}</p>
               {editing ? (
                 <input
                   type="number"
@@ -335,26 +365,26 @@ export default function GoalsSection() {
               ) : (
                 <p className="mt-1 text-2xl font-semibold text-white">
                   {goals.calories.toLocaleString()}
-                  <span className="ml-1.5 text-sm text-slate-400">kcal</span>
+                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.kcal')}</span>
                 </p>
               )}
             </div>
           </div>
           <div className="flex gap-4 text-xs">
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">Protein</p>
+              <p className="text-slate-500">{t('goals.protein')}</p>
               <p className="mt-0.5 font-semibold text-emerald-300">
                 {Math.round(((goals.protein * 4) / goals.calories) * 100)}%
               </p>
             </div>
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">Carbs</p>
+              <p className="text-slate-500">{t('goals.carbs')}</p>
               <p className="mt-0.5 font-semibold text-sky-300">
                 {Math.round(((goals.carbs * 4) / goals.calories) * 100)}%
               </p>
             </div>
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">Fat</p>
+              <p className="text-slate-500">{t('goals.fat')}</p>
               <p className="mt-0.5 font-semibold text-amber-300">
                 {Math.round(((goals.fat * 9) / goals.calories) * 100)}%
               </p>
@@ -364,32 +394,7 @@ export default function GoalsSection() {
 
         {/* Macro bars / editors */}
         <div className="mt-5 grid gap-5">
-          {[
-            {
-              key: 'protein' as const,
-              label: 'Protein',
-              unit: 'g',
-              max: 200,
-              color: 'bg-emerald-400',
-              glow: 'rgba(52,211,153,0.4)',
-            },
-            {
-              key: 'carbs' as const,
-              label: 'Carbs',
-              unit: 'g',
-              max: 300,
-              color: 'bg-sky-400',
-              glow: 'rgba(56,189,248,0.4)',
-            },
-            {
-              key: 'fat' as const,
-              label: 'Fat',
-              unit: 'g',
-              max: 100,
-              color: 'bg-amber-400',
-              glow: 'rgba(251,191,36,0.4)',
-            },
-          ].map((macro) => (
+          {MACROS.map((macro) => (
             <div key={macro.key}>
               {editing ? (
                 <div className="flex items-center justify-between gap-4">
@@ -431,8 +436,8 @@ export default function GoalsSection() {
                 <Footprints className="size-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Daily steps</h3>
-                <p className="mt-0.5 text-xs text-slate-400">Step count goal</p>
+                <h3 className="font-semibold text-white">{t('goals.dailySteps')}</h3>
+                <p className="mt-0.5 text-xs text-slate-400">{t('goals.stepCountGoal')}</p>
               </div>
             </div>
             <Sparkles className="size-4 text-slate-600" />
@@ -445,13 +450,13 @@ export default function GoalsSection() {
                 step={500}
                 min={1000}
                 max={30000}
-                suffix="steps"
+                suffix={t('goals.stepsSuffix')}
               />
             ) : (
               <>
                 <p className="text-3xl font-semibold text-white">
                   {goals.steps.toLocaleString()}
-                  <span className="ml-1.5 text-sm text-slate-400">steps</span>
+                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.stepsSuffix')}</span>
                 </p>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
                   <div
@@ -459,7 +464,9 @@ export default function GoalsSection() {
                     style={{ width: '75%', boxShadow: '0 0 10px rgba(167,139,250,0.3)' }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">7,543 of {goals.steps.toLocaleString()} today</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  7,543 {t('goals.todaySteps')} {goals.steps.toLocaleString()}
+                </p>
               </>
             )}
           </div>
@@ -473,8 +480,8 @@ export default function GoalsSection() {
                 <Droplets className="size-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Water intake</h3>
-                <p className="mt-0.5 text-xs text-slate-400">Hydration goal</p>
+                <h3 className="font-semibold text-white">{t('goals.waterIntake')}</h3>
+                <p className="mt-0.5 text-xs text-slate-400">{t('goals.hydrationGoal')}</p>
               </div>
             </div>
             <Activity className="size-4 text-slate-600" />
@@ -493,7 +500,7 @@ export default function GoalsSection() {
               <>
                 <p className="text-3xl font-semibold text-white">
                   {goals.water}
-                  <span className="ml-1.5 text-sm text-slate-400">L / day</span>
+                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.literPerDay')}</span>
                 </p>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
                   <div
@@ -501,7 +508,9 @@ export default function GoalsSection() {
                     style={{ width: '82%', boxShadow: '0 0 10px rgba(34,211,238,0.3)' }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">2.05 of {goals.water} L today</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  2.05 {t('goals.todayWater')} {goals.water} L
+                </p>
               </>
             )}
           </div>
@@ -512,7 +521,7 @@ export default function GoalsSection() {
       <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-emerald-900/40 bg-emerald-400/[0.04] px-5 py-4 text-sm sm:flex-row">
         <p className="text-slate-400">
           <Sparkles className="mr-1.5 inline size-4 text-emerald-400" />
-          Goals are recalculated when you update your weight or activity level.
+          {t('goals.footerNote')}
         </p>
         {editing && (
           <button
@@ -520,7 +529,7 @@ export default function GoalsSection() {
             onClick={save}
             className="flex items-center gap-2 rounded-xl bg-emerald-400 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.25)] transition hover:bg-emerald-300"
           >
-            <Save className="size-4" /> Save changes
+            <Save className="size-4" /> {t('goals.saveChanges')}
           </button>
         )}
       </div>

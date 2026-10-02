@@ -15,6 +15,8 @@ import {
   Wifi,
 } from 'lucide-react'
 
+import { useLanguage } from '@/contexts/language-context'
+
 type Gym = {
   id: string
   name: string
@@ -22,8 +24,8 @@ type Gym = {
   address: string
   rating: number
   reviews: number
-  facilities: { icon: typeof Waves; label: string }[]
-  trainers: { name: string; specialty: string; experience: string }[]
+  facilities: { icon: typeof Waves; key: string }[]
+  trainers: { name: string; specialtyKey: string; experienceYears: number }[]
 }
 
 const GYMS: Gym[] = [
@@ -35,14 +37,14 @@ const GYMS: Gym[] = [
     rating: 4.8,
     reviews: 312,
     facilities: [
-      { icon: Dumbbell, label: 'Free weights' },
-      { icon: Waves, label: 'Pool' },
-      { icon: Coffee, label: 'Café' },
-      { icon: Car, label: 'Parking' },
+      { icon: Dumbbell, key: 'gymFinder.facility.freeWeights' },
+      { icon: Waves, key: 'gymFinder.facility.pool' },
+      { icon: Coffee, key: 'gymFinder.facility.cafe' },
+      { icon: Car, key: 'gymFinder.facility.parking' },
     ],
     trainers: [
-      { name: 'Jasur Karimov', specialty: 'Strength & conditioning', experience: '8 yrs' },
-      { name: 'Dilnoza Yusupova', specialty: 'Yoga & mobility', experience: '6 yrs' },
+      { name: 'Jasur Karimov', specialtyKey: 'gymFinder.specialty.strength', experienceYears: 8 },
+      { name: 'Dilnoza Yusupova', specialtyKey: 'gymFinder.specialty.yoga', experienceYears: 6 },
     ],
   },
   {
@@ -53,14 +55,14 @@ const GYMS: Gym[] = [
     rating: 4.6,
     reviews: 198,
     facilities: [
-      { icon: Dumbbell, label: 'Free weights' },
-      { icon: Dumbbell, label: 'CrossFit zone' },
-      { icon: Wifi, label: 'Free Wi-Fi' },
+      { icon: Dumbbell, key: 'gymFinder.facility.freeWeights' },
+      { icon: Dumbbell, key: 'gymFinder.facility.crossfit' },
+      { icon: Wifi, key: 'gymFinder.facility.wifi' },
     ],
     trainers: [
-      { name: 'Otabek Rasulov', specialty: 'CrossFit & HIIT', experience: '5 yrs' },
-      { name: 'Malika Ahmedova', specialty: 'Pilates', experience: '4 yrs' },
-      { name: 'Sardor Aliyev', specialty: 'Boxing', experience: '7 yrs' },
+      { name: 'Otabek Rasulov', specialtyKey: 'gymFinder.specialty.crossfit', experienceYears: 5 },
+      { name: 'Malika Ahmedova', specialtyKey: 'gymFinder.specialty.pilates', experienceYears: 4 },
+      { name: 'Sardor Aliyev', specialtyKey: 'gymFinder.specialty.boxing', experienceYears: 7 },
     ],
   },
   {
@@ -71,13 +73,13 @@ const GYMS: Gym[] = [
     rating: 4.5,
     reviews: 156,
     facilities: [
-      { icon: Dumbbell, label: 'Free weights' },
-      { icon: Waves, label: 'Sauna' },
-      { icon: Car, label: 'Parking' },
+      { icon: Dumbbell, key: 'gymFinder.facility.freeWeights' },
+      { icon: Waves, key: 'gymFinder.facility.sauna' },
+      { icon: Car, key: 'gymFinder.facility.parking' },
     ],
     trainers: [
-      { name: 'Bekzod Tursunov', specialty: 'Bodybuilding', experience: '10 yrs' },
-      { name: 'Nigora Sultanova', specialty: 'Weight loss', experience: '5 yrs' },
+      { name: 'Bekzod Tursunov', specialtyKey: 'gymFinder.specialty.bodybuilding', experienceYears: 10 },
+      { name: 'Nigora Sultanova', specialtyKey: 'gymFinder.specialty.weightLoss', experienceYears: 5 },
     ],
   },
   {
@@ -88,17 +90,18 @@ const GYMS: Gym[] = [
     rating: 4.4,
     reviews: 89,
     facilities: [
-      { icon: Dumbbell, label: 'CrossFit zone' },
-      { icon: Wifi, label: 'Free Wi-Fi' },
-      { icon: Coffee, label: 'Café' },
+      { icon: Dumbbell, key: 'gymFinder.facility.crossfit' },
+      { icon: Wifi, key: 'gymFinder.facility.wifi' },
+      { icon: Coffee, key: 'gymFinder.facility.cafe' },
     ],
     trainers: [
-      { name: 'Timur Yuldashev', specialty: 'Functional training', experience: '6 yrs' },
+      { name: 'Timur Yuldashev', specialtyKey: 'gymFinder.specialty.functional', experienceYears: 6 },
     ],
   },
 ]
 
 export default function GymFinder() {
+  const { t } = useLanguage()
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState<string | null>('befit')
 
@@ -113,13 +116,13 @@ export default function GymFinder() {
     <div className="mx-auto max-w-[1080px]">
       <div className="mb-7">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-          <Dumbbell className="size-3.5" /> Tashkent
+          <Dumbbell className="size-3.5" /> {t('gymFinder.badge')}
         </div>
         <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
-          Gym Finder
+          {t('gymFinder.title')}
         </h1>
         <p className="mt-2 text-sm text-slate-400">
-          Discover gyms and personal trainers near you in Tashkent.
+          {t('gymFinder.subtitle')}
         </p>
       </div>
 
@@ -129,7 +132,7 @@ export default function GymFinder() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by gym name or area..."
+          placeholder={t('gymFinder.searchPlaceholder')}
           className="w-full rounded-xl border border-slate-700 bg-slate-900/60 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
         />
       </div>
@@ -166,7 +169,9 @@ export default function GymFinder() {
                   <div className="mt-2 flex items-center gap-1.5">
                     <Star className="size-4 fill-amber-400 text-amber-400" />
                     <span className="text-sm font-semibold text-amber-300">{gym.rating}</span>
-                    <span className="text-xs text-slate-500">({gym.reviews} reviews)</span>
+                    <span className="text-xs text-slate-500">
+                      ({gym.reviews} {t('gymFinder.reviews')})
+                    </span>
                   </div>
                 </div>
                 {isOpen ? (
@@ -181,17 +186,17 @@ export default function GymFinder() {
                   {/* Facilities */}
                   <div className="mb-5">
                     <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-                      Facilities
+                      {t('gymFinder.facilities')}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {gym.facilities.map((f, idx) => {
                         const Icon = f.icon
                         return (
                           <span
-                            key={`${f.label}-${idx}`}
+                            key={`${f.key}-${idx}`}
                             className="flex items-center gap-1.5 rounded-lg bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300"
                           >
-                            <Icon className="size-3.5 text-emerald-400" /> {f.label}
+                            <Icon className="size-3.5 text-emerald-400" /> {t(f.key)}
                           </span>
                         )
                       })}
@@ -201,26 +206,28 @@ export default function GymFinder() {
                   {/* Trainers */}
                   <div>
                     <p className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-                      <Users className="size-3.5" /> Personal trainers ({gym.trainers.length})
+                      <Users className="size-3.5" /> {t('gymFinder.trainers')} ({gym.trainers.length})
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {gym.trainers.map((t) => (
+                      {gym.trainers.map((tItem) => (
                         <div
-                          key={t.name}
+                          key={tItem.name}
                           className="flex items-center gap-3 rounded-xl bg-slate-800/40 p-4 transition hover:bg-slate-800/60"
                         >
                           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-sm font-semibold text-emerald-300">
-                            {t.name
+                            {tItem.name
                               .split(' ')
                               .map((n) => n[0])
                               .join('')}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-white">{t.name}</p>
-                            <p className="mt-0.5 truncate text-xs text-slate-400">{t.specialty}</p>
+                            <p className="truncate text-sm font-semibold text-white">{tItem.name}</p>
+                            <p className="mt-0.5 truncate text-xs text-slate-400">
+                              {t(tItem.specialtyKey)}
+                            </p>
                           </div>
                           <span className="shrink-0 rounded-lg bg-slate-800 px-2 py-1 text-[10px] font-medium text-slate-400">
-                            {t.experience}
+                            {tItem.experienceYears} {t('gymFinder.exp')}
                           </span>
                         </div>
                       ))}
@@ -233,7 +240,7 @@ export default function GymFinder() {
         })}
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center text-sm text-slate-400">
-            No gyms found matching &quot;{query}&quot;.
+            &quot;{query}&quot; {t('gymFinder.notFound')}
           </div>
         )}
       </div>

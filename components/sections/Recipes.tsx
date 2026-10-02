@@ -26,6 +26,7 @@ export interface Recipe {
   emoji: string
   steps: string[]
 }
+import { useLanguage } from '@/contexts/language-context'
 
 export const RECIPES: Recipe[] = [
   {

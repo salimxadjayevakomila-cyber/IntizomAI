@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+ import type { Metadata } from 'next'
+import { LanguageProvider } from '@/contexts/language-context'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="uz">
-      <body className="bg-slate-950 text-slate-100 antialiased">{children}</body>
+      <body className="bg-slate-950 text-slate-100 antialiased">
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   )
 }
