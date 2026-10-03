@@ -1,6 +1,6 @@
  'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Activity,
   Check,
@@ -20,6 +20,68 @@ import {
 } from 'lucide-react'
 
 import { useLanguage } from '@/contexts/language-context'
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:5001'
+
+const apiFetch = async (
+  endpoint: string,
+  options: RequestInit = {}
+) => {
+  const token =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('token')
+      : null
+
+  const response = await fetch(
+    `${API_URL}${endpoint}`,
+    {
+      ...options,
+      headers: {
+        ...(options.body
+          ? {
+              'Content-Type':
+                'application/json',
+            }
+          : {}),
+        ...(token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : {}),
+        ...(options.headers || {}),
+      },
+    }
+  )
+
+  const text = await response.text()
+
+  let data: any = null
+
+  try {
+    data = text
+      ? JSON.parse(text)
+      : null
+  } catch {
+    throw new Error(
+      'Backend JSON response qaytarmadi.'
+    )
+  }
+
+  if (
+    !response.ok ||
+    data?.success === false
+  ) {
+    throw new Error(
+      data?.message ||
+        data?.error ||
+        'Serverda xatolik yuz berdi'
+    )
+  }
+
+  return data
+}
 
 type Goals = {
   currentWeight: number
@@ -60,20 +122,36 @@ function MacroBar({
   color: string
   glow: string
 }) {
-  const pct = Math.min((value / max) * 100, 100)
+  const pct = Math.min(
+    (value / max) * 100,
+    100
+  )
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-300">{label}</span>
+        <span className="text-sm font-medium text-slate-300">
+          {label}
+        </span>
+
         <span className="text-sm text-slate-400">
-          <strong className="text-white">{value}</strong>
-          <span className="ml-0.5 text-slate-500">{unit}</span>
+          <strong className="text-white">
+            {value}
+          </strong>
+
+          <span className="ml-0.5 text-slate-500">
+            {unit}
+          </span>
         </span>
       </div>
+
       <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
         <div
           className={`h-full rounded-full ${color} transition-all duration-500`}
-          style={{ width: `${pct}%`, boxShadow: `0 0 12px ${glow}` }}
+          style={{
+            width: `${pct}%`,
+            boxShadow: `0 0 12px ${glow}`,
+          }}
         />
       </div>
     </div>
@@ -96,27 +174,44 @@ function Stepper({
   suffix: string
 }) {
   const clamp = (v: number) => {
-    const clampedValue = Math.min(Math.max(v, min), max)
-    return Number(clampedValue.toFixed(1))
+    const clampedValue = Math.min(
+      Math.max(v, min),
+      max
+    )
+
+    return Number(
+      clampedValue.toFixed(1)
+    )
   }
 
   return (
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => onChange(clamp(value - step))}
+        onClick={() =>
+          onChange(clamp(value - step))
+        }
         className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 transition hover:border-emerald-400/50 hover:text-emerald-300"
         aria-label="Decrease"
       >
         <Minus className="size-4" />
       </button>
+
       <div className="flex min-w-[90px] items-baseline justify-center gap-1 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2">
-        <span className="text-lg font-semibold text-white">{value.toLocaleString()}</span>
-        <span className="text-xs text-slate-500">{suffix}</span>
+        <span className="text-lg font-semibold text-white">
+          {value.toLocaleString()}
+        </span>
+
+        <span className="text-xs text-slate-500">
+          {suffix}
+        </span>
       </div>
+
       <button
         type="button"
-        onClick={() => onChange(clamp(value + step))}
+        onClick={() =>
+          onChange(clamp(value + step))
+        }
         className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 transition hover:border-emerald-400/50 hover:text-emerald-300"
         aria-label="Increase"
       >
@@ -128,29 +223,296 @@ function Stepper({
 
 export default function GoalsSection() {
   const { t } = useLanguage()
-  const [goals, setGoals] = useState<Goals>(defaultGoals)
-  const [draft, setDraft] = useState<Goals>(defaultGoals)
-  const [editing, setEditing] = useState(false)
-  const [saved, setSaved] = useState(false)
 
-  const weightLost = draft.startWeight - draft.currentWeight
-  const totalToLose = draft.startWeight - draft.goalWeight
-  const weightPct = totalToLose > 0 ? Math.min((weightLost / totalToLose) * 100, 100) : 0
-  const remaining = Math.max(draft.currentWeight - draft.goalWeight, 0)
+  const [goals, setGoals] =
+    useState<Goals>(defaultGoals)
 
-  const update = <K extends keyof Goals>(key: K, value: Goals[K]) =>
-    setDraft((d) => ({ ...d, [key]: value }))
+  const [draft, setDraft] =
+    useState<Goals>(defaultGoals)
 
-  const save = () => {
-    setGoals(draft)
-    setEditing(false)
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 2500)
+  const [editing, setEditing] =
+    useState(false)
+
+  const [saved, setSaved] =
+    useState(false)
+
+  const [loading, setLoading] =
+    useState(true)
+
+  const [todaySteps, setTodaySteps] =
+    useState(0)
+
+  // =========================
+  // LOAD GOALS + STEPS
+  // =========================
+
+  useEffect(() => {
+    const loadGoals = async () => {
+      try {
+        setLoading(true)
+
+        const result =
+          await apiFetch('/api/goals')
+
+        const data = result?.data
+
+        const loadedGoals: Goals = {
+          currentWeight:
+            Number(
+              data?.currentWeight
+            ) || 0,
+
+          goalWeight:
+            Number(
+              data?.goalWeight
+            ) || 0,
+
+          startWeight:
+            Number(
+              data?.startWeight
+            ) || 0,
+
+          calories:
+            Number(
+              data?.calories
+            ) || 2000,
+
+          protein:
+            Number(
+              data?.protein
+            ) || 140,
+
+          carbs:
+            Number(
+              data?.carbs
+            ) || 220,
+
+          fat:
+            Number(
+              data?.fat
+            ) || 65,
+
+          steps:
+            Number(
+              data?.steps
+            ) || 10000,
+
+          water:
+            Number(
+              data?.water
+            ) || 2.5,
+        }
+
+        setGoals(loadedGoals)
+        setDraft(loadedGoals)
+
+        // Bugungi qadamlarni olish
+        try {
+          const stepsResult =
+            await apiFetch('/api/steps')
+
+          setTodaySteps(
+            Number(
+              stepsResult?.data?.steps
+            ) || 0
+          )
+        } catch (error) {
+          console.error(
+            'Load today steps error:',
+            error
+          )
+        }
+      } catch (error) {
+        console.error(
+          'Load goals error:',
+          error
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGoals()
+  }, [])
+
+  const weightLost =
+    draft.startWeight -
+    draft.currentWeight
+
+  const totalToLose =
+    draft.startWeight -
+    draft.goalWeight
+
+  const weightPct =
+    totalToLose > 0
+      ? Math.min(
+          (weightLost / totalToLose) *
+            100,
+          100
+        )
+      : 0
+
+  const remaining = Math.max(
+    draft.currentWeight -
+      draft.goalWeight,
+    0
+  )
+
+  const update = <
+    K extends keyof Goals
+  >(
+    key: K,
+    value: Goals[K]
+  ) =>
+    setDraft((d) => ({
+      ...d,
+      [key]: value,
+    }))
+
+  // =========================
+  // SAVE GOALS
+  // =========================
+
+  const save = async () => {
+    try {
+      const result =
+        await apiFetch('/api/goals', {
+          method: 'PUT',
+          body: JSON.stringify({
+            currentWeight:
+              draft.currentWeight,
+
+            goalWeight:
+              draft.goalWeight,
+
+            startWeight:
+              draft.startWeight,
+
+            calories:
+              draft.calories,
+
+            protein:
+              draft.protein,
+
+            carbs:
+              draft.carbs,
+
+            fat:
+              draft.fat,
+
+            steps:
+              draft.steps,
+
+            water:
+              draft.water,
+          }),
+        })
+
+      const savedGoals =
+        result?.data
+
+      const updatedGoals: Goals = {
+        currentWeight:
+          Number(
+            savedGoals?.currentWeight
+          ) ||
+          draft.currentWeight,
+
+        goalWeight:
+          Number(
+            savedGoals?.goalWeight
+          ) ||
+          draft.goalWeight,
+
+        startWeight:
+          Number(
+            savedGoals?.startWeight
+          ) ||
+          draft.startWeight,
+
+        calories:
+          Number(
+            savedGoals?.calories
+          ) ||
+          draft.calories,
+
+        protein:
+          Number(
+            savedGoals?.protein
+          ) ||
+          draft.protein,
+
+        carbs:
+          Number(
+            savedGoals?.carbs
+          ) ||
+          draft.carbs,
+
+        fat:
+          Number(
+            savedGoals?.fat
+          ) ||
+          draft.fat,
+
+        steps:
+          Number(
+            savedGoals?.steps
+          ) ||
+          draft.steps,
+
+        water:
+          Number(
+            savedGoals?.water
+          ) ||
+          draft.water,
+      }
+
+      setGoals(updatedGoals)
+      setDraft(updatedGoals)
+      setEditing(false)
+      setSaved(true)
+
+      window.setTimeout(
+        () => setSaved(false),
+        2500
+      )
+    } catch (error) {
+      console.error(
+        'Save goals error:',
+        error
+      )
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Goals saqlashda xatolik yuz berdi'
+      )
+    }
   }
 
   const cancel = () => {
     setDraft(goals)
     setEditing(false)
+  }
+
+  // =========================
+  // LOADING
+  // =========================
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-[1080px]">
+        <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15]">
+          <div className="text-center">
+            <div className="mx-auto size-8 animate-spin rounded-full border-2 border-emerald-400/30 border-t-emerald-400" />
+
+            <p className="mt-4 text-sm text-slate-400">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const MACROS = [
@@ -162,6 +524,7 @@ export default function GoalsSection() {
       color: 'bg-emerald-400',
       glow: 'rgba(52,211,153,0.4)',
     },
+
     {
       key: 'carbs' as const,
       label: t('goals.carbs'),
@@ -170,6 +533,7 @@ export default function GoalsSection() {
       color: 'bg-sky-400',
       glow: 'rgba(56,189,248,0.4)',
     },
+
     {
       key: 'fat' as const,
       label: t('goals.fat'),
@@ -186,21 +550,27 @@ export default function GoalsSection() {
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-            <Target className="size-3.5" /> {t('goals.badge')}
+            <Target className="size-3.5" />
+            {t('goals.badge')}
           </div>
+
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
             {t('goals.title')}
           </h1>
+
           <p className="mt-2 text-sm text-slate-400">
             {t('goals.subtitle')}
           </p>
         </div>
+
         <div className="flex items-center gap-2">
           {saved && (
             <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-3 py-2 text-xs font-semibold text-emerald-300 transition">
-              <Check className="size-3.5" /> {t('goals.saved')}
+              <Check className="size-3.5" />
+              {t('goals.saved')}
             </span>
           )}
+
           {editing ? (
             <>
               <button
@@ -210,12 +580,14 @@ export default function GoalsSection() {
               >
                 {t('goals.cancel')}
               </button>
+
               <button
                 type="button"
                 onClick={save}
                 className="flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.25)] transition hover:bg-emerald-300"
               >
-                <Save className="size-4" /> {t('goals.save')}
+                <Save className="size-4" />
+                {t('goals.save')}
               </button>
             </>
           ) : (
@@ -227,7 +599,8 @@ export default function GoalsSection() {
               }}
               className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/20"
             >
-              <Pencil className="size-4" /> {t('goals.edit')}
+              <Pencil className="size-4" />
+              {t('goals.edit')}
             </button>
           )}
         </div>
@@ -240,33 +613,58 @@ export default function GoalsSection() {
             <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-300">
               <Scale className="size-6" />
             </div>
+
             <div>
-              <h2 className="text-lg font-semibold text-white">{t('goals.targetWeightTracker')}</h2>
+              <h2 className="text-lg font-semibold text-white">
+                {t('goals.targetWeightTracker')}
+              </h2>
+
               <p className="mt-0.5 text-sm text-slate-400">
-                {t('goals.progressFrom')} {goals.startWeight} kg {t('goals.to')} {goals.goalWeight} kg
+                {t('goals.progressFrom')}{' '}
+                {goals.startWeight} kg{' '}
+                {t('goals.to')}{' '}
+                {goals.goalWeight} kg
               </p>
             </div>
           </div>
+
           <div className="flex gap-6">
             <div>
-              <p className="text-xs text-slate-500">{t('goals.current')}</p>
+              <p className="text-xs text-slate-500">
+                {t('goals.current')}
+              </p>
+
               <p className="mt-1 text-2xl font-semibold text-white">
                 {goals.currentWeight}
-                <span className="ml-1 text-sm text-slate-400">kg</span>
+                <span className="ml-1 text-sm text-slate-400">
+                  kg
+                </span>
               </p>
             </div>
+
             <div className="border-l border-slate-700 pl-6">
-              <p className="text-xs text-slate-500">{t('goals.goal')}</p>
+              <p className="text-xs text-slate-500">
+                {t('goals.goal')}
+              </p>
+
               <p className="mt-1 text-2xl font-semibold text-emerald-300">
                 {goals.goalWeight}
-                <span className="ml-1 text-sm text-emerald-400/70">kg</span>
+                <span className="ml-1 text-sm text-emerald-400/70">
+                  kg
+                </span>
               </p>
             </div>
+
             <div className="border-l border-slate-700 pl-6">
-              <p className="text-xs text-slate-500">{t('goals.remaining')}</p>
+              <p className="text-xs text-slate-500">
+                {t('goals.remaining')}
+              </p>
+
               <p className="mt-1 text-2xl font-semibold text-white">
                 {remaining.toFixed(1)}
-                <span className="ml-1 text-sm text-slate-400">kg</span>
+                <span className="ml-1 text-sm text-slate-400">
+                  kg
+                </span>
               </p>
             </div>
           </div>
@@ -277,19 +675,40 @@ export default function GoalsSection() {
           <div className="mb-2 flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 text-slate-400">
               <TrendingUp className="size-3.5 text-emerald-400" />
-              {weightLost > 0 ? `${weightLost.toFixed(1)} ${t('goals.kgLost')}` : t('goals.justStarted')}
+
+              {weightLost > 0
+                ? `${weightLost.toFixed(1)} ${t(
+                    'goals.kgLost'
+                  )}`
+                : t('goals.justStarted')}
             </span>
-            <span className="font-semibold text-emerald-300">{Math.round(weightPct)}%</span>
+
+            <span className="font-semibold text-emerald-300">
+              {Math.round(weightPct)}%
+            </span>
           </div>
+
           <div className="relative h-4 overflow-hidden rounded-full bg-slate-800">
             <div
               className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-700"
-              style={{ width: `${weightPct}%`, boxShadow: '0 0 16px rgba(52,211,153,0.3)' }}
+              style={{
+                width: `${weightPct}%`,
+                boxShadow:
+                  '0 0 16px rgba(52,211,153,0.3)',
+              }}
             />
           </div>
+
           <div className="mt-2 flex justify-between text-[11px] text-slate-500">
-            <span>{t('goals.start')} · {goals.startWeight} kg</span>
-            <span>{t('goals.goal')} · {goals.goalWeight} kg</span>
+            <span>
+              {t('goals.start')} ·{' '}
+              {goals.startWeight} kg
+            </span>
+
+            <span>
+              {t('goals.goal')} ·{' '}
+              {goals.goalWeight} kg
+            </span>
           </div>
         </div>
 
@@ -300,23 +719,42 @@ export default function GoalsSection() {
               <label className="mb-2 block text-sm font-medium text-slate-300">
                 {t('goals.currentWeightLabel')}
               </label>
+
               <input
                 type="number"
                 step="0.1"
-                value={draft.currentWeight}
-                onChange={(e) => update('currentWeight', parseFloat(e.target.value) || 0)}
+                value={
+                  draft.currentWeight
+                }
+                onChange={(e) =>
+                  update(
+                    'currentWeight',
+                    parseFloat(
+                      e.target.value
+                    ) || 0
+                  )
+                }
                 className="w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
+
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">
                 {t('goals.goalWeightLabel')}
               </label>
+
               <input
                 type="number"
                 step="0.1"
                 value={draft.goalWeight}
-                onChange={(e) => update('goalWeight', parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  update(
+                    'goalWeight',
+                    parseFloat(
+                      e.target.value
+                    ) || 0
+                  )
+                }
                 className="w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
               />
             </div>
@@ -331,18 +769,24 @@ export default function GoalsSection() {
             <div className="flex size-12 items-center justify-center rounded-xl bg-sky-400/15 text-sky-300">
               <Flame className="size-6" />
             </div>
+
             <div>
-              <h2 className="text-lg font-semibold text-white">{t('goals.dailyMacroTargets')}</h2>
+              <h2 className="text-lg font-semibold text-white">
+                {t('goals.dailyMacroTargets')}
+              </h2>
+
               <p className="mt-0.5 text-sm text-slate-400">
                 {t('goals.macroSubtitle')}
               </p>
             </div>
           </div>
+
           <button
             type="button"
             className="hidden items-center gap-1 text-xs font-semibold text-slate-400 sm:flex"
           >
-            {t('goals.daily')} <ChevronDown className="size-3" />
+            {t('goals.daily')}
+            <ChevronDown className="size-3" />
           </button>
         </div>
 
@@ -352,41 +796,90 @@ export default function GoalsSection() {
             <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-400/15 text-emerald-300">
               <Zap className="size-5" />
             </div>
+
             <div>
-              <p className="text-xs text-slate-500">{t('goals.dailyCalorieGoal')}</p>
+              <p className="text-xs text-slate-500">
+                {t('goals.dailyCalorieGoal')}
+              </p>
+
               {editing ? (
                 <input
                   type="number"
                   step="50"
                   value={draft.calories}
-                  onChange={(e) => update('calories', parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    update(
+                      'calories',
+                      parseInt(
+                        e.target.value
+                      ) || 0
+                    )
+                  }
                   className="mt-1 w-32 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-lg font-semibold text-white outline-none focus:border-emerald-400"
                 />
               ) : (
                 <p className="mt-1 text-2xl font-semibold text-white">
                   {goals.calories.toLocaleString()}
-                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.kcal')}</span>
+                  <span className="ml-1.5 text-sm text-slate-400">
+                    {t('goals.kcal')}
+                  </span>
                 </p>
               )}
             </div>
           </div>
+
           <div className="flex gap-4 text-xs">
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">{t('goals.protein')}</p>
+              <p className="text-slate-500">
+                {t('goals.protein')}
+              </p>
+
               <p className="mt-0.5 font-semibold text-emerald-300">
-                {Math.round(((goals.protein * 4) / goals.calories) * 100)}%
+                {goals.calories > 0
+                  ? Math.round(
+                      ((goals.protein *
+                        4) /
+                        goals.calories) *
+                        100
+                    )
+                  : 0}
+                %
               </p>
             </div>
+
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">{t('goals.carbs')}</p>
+              <p className="text-slate-500">
+                {t('goals.carbs')}
+              </p>
+
               <p className="mt-0.5 font-semibold text-sky-300">
-                {Math.round(((goals.carbs * 4) / goals.calories) * 100)}%
+                {goals.calories > 0
+                  ? Math.round(
+                      ((goals.carbs *
+                        4) /
+                        goals.calories) *
+                        100
+                    )
+                  : 0}
+                %
               </p>
             </div>
+
             <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
-              <p className="text-slate-500">{t('goals.fat')}</p>
+              <p className="text-slate-500">
+                {t('goals.fat')}
+              </p>
+
               <p className="mt-0.5 font-semibold text-amber-300">
-                {Math.round(((goals.fat * 9) / goals.calories) * 100)}%
+                {goals.calories > 0
+                  ? Math.round(
+                      ((goals.fat *
+                        9) /
+                        goals.calories) *
+                        100
+                    )
+                  : 0}
+                %
               </p>
             </div>
           </div>
@@ -399,12 +892,25 @@ export default function GoalsSection() {
               {editing ? (
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
-                    <span className={`size-2.5 rounded-full ${macro.color}`} />
-                    <span className="text-sm font-medium text-slate-300">{macro.label}</span>
+                    <span
+                      className={`size-2.5 rounded-full ${macro.color}`}
+                    />
+
+                    <span className="text-sm font-medium text-slate-300">
+                      {macro.label}
+                    </span>
                   </div>
+
                   <Stepper
-                    value={draft[macro.key]}
-                    onChange={(v) => update(macro.key, v)}
+                    value={
+                      draft[macro.key]
+                    }
+                    onChange={(v) =>
+                      update(
+                        macro.key,
+                        v
+                      )
+                    }
                     step={5}
                     min={0}
                     max={macro.max}
@@ -414,7 +920,9 @@ export default function GoalsSection() {
               ) : (
                 <MacroBar
                   label={macro.label}
-                  value={goals[macro.key]}
+                  value={
+                    goals[macro.key]
+                  }
                   unit={macro.unit}
                   max={macro.max}
                   color={macro.color}
@@ -435,37 +943,72 @@ export default function GoalsSection() {
               <div className="flex size-11 items-center justify-center rounded-xl bg-violet-400/15 text-violet-300">
                 <Footprints className="size-5" />
               </div>
+
               <div>
-                <h3 className="font-semibold text-white">{t('goals.dailySteps')}</h3>
-                <p className="mt-0.5 text-xs text-slate-400">{t('goals.stepCountGoal')}</p>
+                <h3 className="font-semibold text-white">
+                  {t('goals.dailySteps')}
+                </h3>
+
+                <p className="mt-0.5 text-xs text-slate-400">
+                  {t('goals.stepCountGoal')}
+                </p>
               </div>
             </div>
+
             <Sparkles className="size-4 text-slate-600" />
           </div>
+
           <div className="mt-5">
             {editing ? (
               <Stepper
                 value={draft.steps}
-                onChange={(v) => update('steps', v)}
+                onChange={(v) =>
+                  update('steps', v)
+                }
                 step={500}
                 min={1000}
                 max={30000}
-                suffix={t('goals.stepsSuffix')}
+                suffix={t(
+                  'goals.stepsSuffix'
+                )}
               />
             ) : (
               <>
                 <p className="text-3xl font-semibold text-white">
                   {goals.steps.toLocaleString()}
-                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.stepsSuffix')}</span>
+
+                  <span className="ml-1.5 text-sm text-slate-400">
+                    {t(
+                      'goals.stepsSuffix'
+                    )}
+                  </span>
                 </p>
+
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
                   <div
                     className="h-full rounded-full bg-violet-400 transition-all"
-                    style={{ width: '75%', boxShadow: '0 0 10px rgba(167,139,250,0.3)' }}
+                    style={{
+                      width: `${Math.min(
+                        (todaySteps /
+                          Math.max(
+                            goals.steps,
+                            1
+                          )) *
+                          100,
+                        100
+                      )}%`,
+                      boxShadow:
+                        '0 0 10px rgba(167,139,250,0.3)',
+                    }}
                   />
                 </div>
+
                 <p className="mt-2 text-xs text-slate-500">
-                  7,543 {t('goals.todaySteps')} {goals.steps.toLocaleString()}
+                  {todaySteps.toLocaleString()}{' '}
+                  {t(
+                    'goals.todaySteps'
+                  )}{' '}
+                  {goals.steps.toLocaleString()}
                 </p>
               </>
             )}
@@ -479,18 +1022,30 @@ export default function GoalsSection() {
               <div className="flex size-11 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-300">
                 <Droplets className="size-5" />
               </div>
+
               <div>
-                <h3 className="font-semibold text-white">{t('goals.waterIntake')}</h3>
-                <p className="mt-0.5 text-xs text-slate-400">{t('goals.hydrationGoal')}</p>
+                <h3 className="font-semibold text-white">
+                  {t('goals.waterIntake')}
+                </h3>
+
+                <p className="mt-0.5 text-xs text-slate-400">
+                  {t(
+                    'goals.hydrationGoal'
+                  )}
+                </p>
               </div>
             </div>
+
             <Activity className="size-4 text-slate-600" />
           </div>
+
           <div className="mt-5">
             {editing ? (
               <Stepper
                 value={draft.water}
-                onChange={(v) => update('water', v)}
+                onChange={(v) =>
+                  update('water', v)
+                }
                 step={0.1}
                 min={0.5}
                 max={5}
@@ -500,16 +1055,31 @@ export default function GoalsSection() {
               <>
                 <p className="text-3xl font-semibold text-white">
                   {goals.water}
-                  <span className="ml-1.5 text-sm text-slate-400">{t('goals.literPerDay')}</span>
+
+                  <span className="ml-1.5 text-sm text-slate-400">
+                    {t(
+                      'goals.literPerDay'
+                    )}
+                  </span>
                 </p>
+
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
                   <div
                     className="h-full rounded-full bg-cyan-400 transition-all"
-                    style={{ width: '82%', boxShadow: '0 0 10px rgba(34,211,238,0.3)' }}
+                    style={{
+                      width: '82%',
+                      boxShadow:
+                        '0 0 10px rgba(34,211,238,0.3)',
+                    }}
                   />
                 </div>
+
                 <p className="mt-2 text-xs text-slate-500">
-                  2.05 {t('goals.todayWater')} {goals.water} L
+                  2.05{' '}
+                  {t(
+                    'goals.todayWater'
+                  )}{' '}
+                  {goals.water} L
                 </p>
               </>
             )}
@@ -523,13 +1093,15 @@ export default function GoalsSection() {
           <Sparkles className="mr-1.5 inline size-4 text-emerald-400" />
           {t('goals.footerNote')}
         </p>
+
         {editing && (
           <button
             type="button"
             onClick={save}
             className="flex items-center gap-2 rounded-xl bg-emerald-400 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.25)] transition hover:bg-emerald-300"
           >
-            <Save className="size-4" /> {t('goals.saveChanges')}
+            <Save className="size-4" />
+            {t('goals.saveChanges')}
           </button>
         )}
       </div>
