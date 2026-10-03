@@ -2,917 +2,1323 @@
 
 import { useEffect, useState } from 'react'
 import {
-  AlertTriangle,
-  Check,
-  Flame,
-  Footprints,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  TrendingUp,
-  Utensils,
-  X,
-  Zap,
+    CalendarDays,
+    Check,
+    Dumbbell,
+    HeartPulse,
+    MessageCircle,
+    RefreshCw,
+    Send,
+    ShieldCheck,
+    Sparkles,
+    Utensils,
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 
-function severityStyle(severity: 'high' | 'medium' | 'low') {
-  if (severity === 'high')
-    return {
-      border: 'border-rose-400/30',
-      bg: 'bg-rose-400/[0.07]',
-      chip: 'bg-rose-400/15 text-rose-300',
-      dot: 'bg-rose-400',
-    }
+const API_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:5001'
 
-  if (severity === 'medium')
-    return {
-      border: 'border-amber-400/30',
-      bg: 'bg-amber-400/[0.07]',
-      chip: 'bg-amber-400/15 text-amber-300',
-      dot: 'bg-amber-400',
-    }
-
-  return {
-    border: 'border-sky-400/30',
-    bg: 'bg-sky-400/[0.07]',
-    chip: 'bg-sky-400/15 text-sky-300',
-    dot: 'bg-sky-400',
-  }
+type TrainerPreferences = {
+    fitnessLevel: string
+    activityLevel: string
+    preferredActivity: string
+    availableDays: string
+    focus: string
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:5001'
+type ChatMessage = {
+    role: 'user' | 'assistant'
+    text: string
+}
 
 const apiFetch = async (
-  endpoint: string,
-  options: RequestInit = {},
+    endpoint: string,
+    options: RequestInit = {}
 ) => {
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('token')
-      : null
+    const token =
+        typeof window !== 'undefined'
+            ? localStorage.getItem('token')
+            : null
 
-  const response = await fetch(
-    `${API_URL}${endpoint}`,
-    {
-      ...options,
-
-      headers: {
-        ...(options.body
-          ? {
-              'Content-Type':
-                'application/json',
-            }
-          : {}),
-
-        ...(token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : {}),
-
-        ...(options.headers || {}),
-      },
-    },
-  )
-
-  const text = await response.text()
-
-  let data: any = null
-
-  try {
-    data = text ? JSON.parse(text) : null
-  } catch {
-    throw new Error(
-      'Backend JSON response qaytarmadi.',
+    const response = await fetch(
+        `${API_URL}${endpoint}`,
+        {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token
+                    ? {
+                        Authorization: `Bearer ${token}`,
+                    }
+                    : {}),
+                ...(options.headers || {}),
+            },
+        }
     )
-  }
 
-  if (
-    !response.ok ||
-    data?.success === false
-  ) {
-    throw new Error(
-      data?.message ||
-        data?.error ||
-        'Serverda xatolik yuz berdi',
-    )
-  }
+    const text = await response.text()
 
-  return data
+    let data: any = {}
+
+    try {
+        data = text ? JSON.parse(text) : {}
+    } catch {
+        data = {}
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(
+            data.message ||
+            'Serverda xatolik yuz berdi'
+        )
+    }
+
+    return data
 }
 
 export default function AITrainer() {
-  const { t, language } = useLanguage()
+    const { language } = useLanguage()
 
-  const [dismissed, setDismissed] =
-    useState<Set<string>>(new Set())
+    const [preferences, setPreferences] =
+        useState<TrainerPreferences>({
+            fitnessLevel: 'beginner',
+            activityLevel: 'normal',
+            preferredActivity: 'general movement',
+            availableDays: 'flexible',
+            focus: 'healthy habits and general fitness',
+        })
 
-  const [trainerPlan, setTrainerPlan] =
-    useState('')
+    const [plan, setPlan] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-  const [trainerLoading, setTrainerLoading] =
-    useState(true)
+    const [chatMessages, setChatMessages] =
+        useState<ChatMessage[]>([])
 
-  const [trainerError, setTrainerError] =
-    useState('')
+    const [chatInput, setChatInput] =
+        useState('')
 
-  const [userData, setUserData] =
-    useState<any>(null)
+    const [chatLoading, setChatLoading] =
+        useState(false)
 
-  /*
-   * USER + GOALS MA'LUMOTLARINI OLISH
-   */
-  useEffect(() => {
-    const loadTrainer = async () => {
-      try {
-        setTrainerLoading(true)
-        setTrainerError('')
+    const [chatError, setChatError] =
+        useState('')
 
-        let storedUser: any = null
+    const copy = {
+        uz: {
+            title: 'AI Trainer',
+            subtitle:
+                'Sog‘lom odatlar va umumiy fitness uchun shaxsiy AI yordamchi.',
+            regenerate: 'Qayta yaratish',
 
-        try {
-          const saved =
-            localStorage.getItem('user')
+            trainer: 'AI Trainer',
+            trainerDesc:
+                'Sizning umumiy fitness preference’laringiz asosida reja yaratadi.',
 
-          if (saved) {
-            storedUser = JSON.parse(saved)
-          }
-        } catch {
-          storedUser = null
-        }
+            preferences: 'Preferences',
 
-        /*
-         * Goals backenddan olinadi.
-         * Bu currentWeight va goalWeight
-         * kabi ma'lumotlarni beradi.
-         */
-        let goals: any = null
+            fitnessLevel: 'Fitness darajasi',
+            activityLevel: 'Faollik darajasi',
+            preferredActivity: 'Yoqadigan faoliyat',
+            availableDays: 'Mavjud kunlar',
+            focus: 'Asosiy fokus',
 
-        try {
-          const goalsResponse =
-            await apiFetch('/api/goals')
+            beginner: 'Boshlang‘ich',
+            intermediate: 'O‘rta',
+            advanced: 'Yuqori',
 
-          goals = goalsResponse?.data || null
-        } catch {
-          goals = null
-        }
+            low: 'Kam',
+            normal: 'Normal',
+            active: 'Faol',
 
-        const profile = {
-          ...storedUser,
-          ...(goals || {}),
-        }
+            generalMovement: 'Umumiy harakat',
+            walking: 'Yurish',
+            running: 'Yugurish',
+            gym: 'Gym',
+            homeWorkout: 'Uy mashqlari',
+            cycling: 'Velosiped',
 
-        setUserData(profile)
+            flexible: 'Moslashuvchan',
+            threeDays: 'Haftasiga 3 kun',
+            fourDays: 'Haftasiga 4 kun',
+            fiveDays: 'Haftasiga 5 kun',
 
-        /*
-         * Backenddagi getTrainerPlan
-         * quyidagi body ni qabul qiladi:
-         *
-         * goal
-         * weight
-         * height
-         * age
-         * gender
-         * fitnessLevel
-         */
+            healthyHabits:
+                'Sog‘lom odatlar',
+            generalFitness:
+                'Umumiy fitness',
+            strength:
+                'Kuch va harakat',
+            mobility:
+                'Mobillik va harakatchanlik',
 
-        const requestBody = {
-          goal:
-            profile.goal ||
-            profile.goalType ||
-            'healthy lifestyle',
+            generate:
+                'AI reja yaratish',
 
-          weight:
-            Number(
-              profile.currentWeight ||
-                profile.weight,
-            ) || 60,
+            yourPlan:
+                'Sizning AI rejangiz',
 
-          height:
-            Number(profile.height) || 165,
+            loading:
+                'AI reja tayyorlamoqda...',
 
-          age:
-            Number(profile.age) || 18,
+            empty:
+                'Hali AI reja yaratilmagan.',
 
-          gender:
-            profile.gender || 'female',
+            errorTitle:
+                'AI Trainer ishlamadi',
 
-          fitnessLevel:
-            profile.activity ||
-            profile.fitnessLevel ||
-            'beginner',
-        }
+            retry:
+                'Qayta urinish',
 
-        const response =
-          await apiFetch('/api/ai/trainer', {
-            method: 'POST',
-            body: JSON.stringify(
-              requestBody,
-            ),
-          })
+            safeTitle:
+                'Xavfsiz va umumiy yondashuv',
 
-        setTrainerPlan(
-          response?.plan || '',
-        )
-      } catch (error: any) {
-        console.error(
-          'AI Trainer error:',
-          error,
-        )
+            safeText:
+                'AI Trainer tana o‘lchovlaridan foydalanib kaloriya, suv yoki makro target hisoblamaydi.',
 
-        setTrainerError(
-          error?.message ||
-            'AI Trainer ma’lumotlarini olishda xatolik yuz berdi.',
-        )
-      } finally {
-        setTrainerLoading(false)
-      }
+            today:
+                'Bugun',
+
+            weekly:
+                'Haftalik reja',
+
+            workout:
+                'Workout',
+
+            recovery:
+                'Recovery',
+
+            nutrition:
+                'Ovqatlanish odatlari',
+
+            motivation:
+                'Motivatsiya',
+
+            chatTitle:
+                'AI Chat',
+
+            chatSubtitle:
+                'Ovqatlanish, fitness, mashqlar va sog‘lom odatlar haqida AI bilan suhbatlashing.',
+
+            chatPlaceholder:
+                'AI ga savol yozing...',
+
+            send:
+                'Yuborish',
+
+            chatEmpty:
+                'Salom! Men INTIZOM AI yordamchisiman. Ovqatlanish, fitness, mashqlar, uyqu va sog‘lom odatlar haqida savollaringizni berishingiz mumkin.',
+
+            chatLoading:
+                'AI javob tayyorlamoqda...',
+
+            chatError:
+                'AI Chat hozir ishlamadi. Birozdan keyin qayta urinib ko‘ring.',
+
+            noTargets:
+                'AI Trainer siz uchun shaxsiy kaloriya yoki suv targetini hisoblamaydi. Bu bo‘lim umumiy sog‘lom odatlar va fitnessga qaratilgan.',
+        },
+
+        ru: {
+            title: 'AI Trainer',
+            subtitle:
+                'AI-помощник для здоровых привычек и общего фитнеса.',
+            regenerate: 'Создать заново',
+
+            trainer: 'AI Trainer',
+            trainerDesc:
+                'Создаёт план на основе ваших общих фитнес-предпочтений.',
+
+            preferences: 'Предпочтения',
+
+            fitnessLevel: 'Уровень фитнеса',
+            activityLevel: 'Уровень активности',
+            preferredActivity: 'Предпочитаемая активность',
+            availableDays: 'Доступные дни',
+            focus: 'Основной фокус',
+
+            beginner: 'Начальный',
+            intermediate: 'Средний',
+            advanced: 'Продвинутый',
+
+            low: 'Низкий',
+            normal: 'Обычный',
+            active: 'Активный',
+
+            generalMovement: 'Общая активность',
+            walking: 'Ходьба',
+            running: 'Бег',
+            gym: 'Зал',
+            homeWorkout: 'Домашняя тренировка',
+            cycling: 'Велосипед',
+
+            flexible: 'Гибкий',
+            threeDays: '3 дня в неделю',
+            fourDays: '4 дня в неделю',
+            fiveDays: '5 дней в неделю',
+
+            healthyHabits:
+                'Здоровые привычки',
+            generalFitness:
+                'Общий фитнес',
+            strength:
+                'Сила и движение',
+            mobility:
+                'Мобильность',
+
+            generate:
+                'Создать AI план',
+
+            yourPlan:
+                'Ваш AI план',
+
+            loading:
+                'AI создаёт план...',
+
+            empty:
+                'AI план ещё не создан.',
+
+            errorTitle:
+                'AI Trainer не работает',
+
+            retry:
+                'Повторить',
+
+            safeTitle:
+                'Безопасный общий подход',
+
+            safeText:
+                'AI Trainer не рассчитывает калории, воду или макроцели на основе параметров тела.',
+
+            today:
+                'Сегодня',
+
+            weekly:
+                'План на неделю',
+
+            workout:
+                'Тренировка',
+
+            recovery:
+                'Восстановление',
+
+            nutrition:
+                'Питание',
+
+            motivation:
+                'Мотивация',
+
+            chatTitle:
+                'AI Chat',
+
+            chatSubtitle:
+                'Общайтесь с AI о питании, фитнесе, тренировках и здоровых привычках.',
+
+            chatPlaceholder:
+                'Напишите вопрос AI...',
+
+            send:
+                'Отправить',
+
+            chatEmpty:
+                'Привет! Я помощник INTIZOM AI. Вы можете спрашивать меня о питании, фитнесе, тренировках, сне и здоровых привычках.',
+
+            chatLoading:
+                'AI готовит ответ...',
+
+            chatError:
+                'AI Chat сейчас не работает. Попробуйте позже.',
+
+            noTargets:
+                'AI Trainer не рассчитывает персональные цели по калориям или воде. Этот раздел посвящён общему здоровью и фитнесу.',
+        },
+
+        en: {
+            title: 'AI Trainer',
+            subtitle:
+                'An AI assistant for healthy habits and general fitness.',
+            regenerate: 'Regenerate',
+
+            trainer: 'AI Trainer',
+            trainerDesc:
+                'Creates a plan based on your general fitness preferences.',
+
+            preferences: 'Preferences',
+
+            fitnessLevel: 'Fitness level',
+            activityLevel: 'Activity level',
+            preferredActivity: 'Preferred activity',
+            availableDays: 'Available days',
+            focus: 'Main focus',
+
+            beginner: 'Beginner',
+            intermediate: 'Intermediate',
+            advanced: 'Advanced',
+
+            low: 'Low',
+            normal: 'Normal',
+            active: 'Active',
+
+            generalMovement: 'General movement',
+            walking: 'Walking',
+            running: 'Running',
+            gym: 'Gym',
+            homeWorkout: 'Home workout',
+            cycling: 'Cycling',
+
+            flexible: 'Flexible',
+            threeDays: '3 days per week',
+            fourDays: '4 days per week',
+            fiveDays: '5 days per week',
+
+            healthyHabits:
+                'Healthy habits',
+            generalFitness:
+                'General fitness',
+            strength:
+                'Strength and movement',
+            mobility:
+                'Mobility',
+
+            generate:
+                'Generate AI plan',
+
+            yourPlan:
+                'Your AI plan',
+
+            loading:
+                'AI is creating your plan...',
+
+            empty:
+                'No AI plan has been created yet.',
+
+            errorTitle:
+                'AI Trainer failed',
+
+            retry:
+                'Try again',
+
+            safeTitle:
+                'Safe general approach',
+
+            safeText:
+                'AI Trainer does not calculate calorie, water or macro targets from body measurements.',
+
+            today:
+                'Today',
+
+            weekly:
+                'Weekly plan',
+
+            workout:
+                'Workout',
+
+            recovery:
+                'Recovery',
+
+            nutrition:
+                'Nutrition habits',
+
+            motivation:
+                'Motivation',
+
+            chatTitle:
+                'AI Chat',
+
+            chatSubtitle:
+                'Chat with AI about nutrition, fitness, workouts and healthy habits.',
+
+            chatPlaceholder:
+                'Ask AI a question...',
+
+            send:
+                'Send',
+
+            chatEmpty:
+                'Hi! I am the INTIZOM AI assistant. You can ask me about nutrition, fitness, workouts, sleep and healthy habits.',
+
+            chatLoading:
+                'AI is preparing an answer...',
+
+            chatError:
+                'AI Chat is temporarily unavailable. Please try again later.',
+
+            noTargets:
+                'AI Trainer does not calculate personal calorie or water targets. This section focuses on general wellness and fitness.',
+        },
     }
 
-    loadTrainer()
-  }, [])
+    const t =
+        copy[
+            language === 'ru'
+                ? 'ru'
+                : language === 'en'
+                    ? 'en'
+                    : 'uz'
+        ]
 
-  /*
-   * HAFTA KUNLARI
-   */
-  const WEEK_DAYS = [
-    t('aiTrainer.days.mon'),
-    t('aiTrainer.days.tue'),
-    t('aiTrainer.days.wed'),
-    t('aiTrainer.days.thu'),
-    t('aiTrainer.days.fri'),
-    t('aiTrainer.days.sat'),
-    t('aiTrainer.days.sun'),
-  ]
+    // ============================================================
+    // AI TRAINER
+    // ============================================================
 
-  /*
-   * HOZIRCHA STEP/MEAL BACKENDLARI BILAN
-   * KEYINGI BOSQICHDA BOG'LANADI.
-   */
-  const COMPLIANCE_DATA = [
-    {
-      day: WEEK_DAYS[0],
-      score: 92,
-      logged: true,
-    },
-    {
-      day: WEEK_DAYS[1],
-      score: 88,
-      logged: true,
-    },
-    {
-      day: WEEK_DAYS[2],
-      score: 95,
-      logged: true,
-    },
-    {
-      day: WEEK_DAYS[3],
-      score: 0,
-      logged: false,
-    },
-    {
-      day: WEEK_DAYS[4],
-      score: 84,
-      logged: true,
-    },
-    {
-      day: WEEK_DAYS[5],
-      score: 76,
-      logged: true,
-    },
-    {
-      day: WEEK_DAYS[6],
-      score: 90,
-      logged: true,
-    },
-  ]
+    const generateTrainerPlan =
+        async () => {
+            try {
+                setLoading(true)
+                setError('')
 
-  const WARNINGS = [
-    {
-      id: 'missed-thu',
-      icon: AlertTriangle,
-      title: t(
-        'aiTrainer.warnings.missedThu.title',
-      ),
-      detail: t(
-        'aiTrainer.warnings.missedThu.detail',
-      ),
-      severity: 'high' as const,
-      tip: t(
-        'aiTrainer.warnings.missedThu.tip',
-      ),
-    },
+                const data =
+                    await apiFetch(
+                        '/api/ai/trainer',
+                        {
+                            method: 'POST',
+                            body: JSON.stringify(
+                                preferences
+                            ),
+                        }
+                    )
 
-    {
-      id: 'over-carbs',
-      icon: AlertTriangle,
-      title: t(
-        'aiTrainer.warnings.overCarbs.title',
-      ),
-      detail: t(
-        'aiTrainer.warnings.overCarbs.detail',
-      ),
-      severity: 'medium' as const,
-      tip: t(
-        'aiTrainer.warnings.overCarbs.tip',
-      ),
-    },
+                setPlan(
+                    data.plan ||
+                    data.data?.plan ||
+                    ''
+                )
+            } catch (err: any) {
+                console.error(
+                    'AI Trainer error:',
+                    err
+                )
 
-    {
-      id: 'low-steps',
-      icon: TrendingUp,
-      title: t(
-        'aiTrainer.warnings.lowSteps.title',
-      ),
-      detail: t(
-        'aiTrainer.warnings.lowSteps.detail',
-      ),
-      severity: 'low' as const,
-      tip: t(
-        'aiTrainer.warnings.lowSteps.tip',
-      ),
-    },
-  ]
-
-  const HABITS = [
-    {
-      label: t(
-        'aiTrainer.habits.loggedMeals',
-      ),
-      done: true,
-      icon: Utensils,
-    },
-
-    {
-      label: t(
-        'aiTrainer.habits.hitProtein',
-      ),
-      done: true,
-      icon: Check,
-    },
-
-    {
-      label: t(
-        'aiTrainer.habits.calorieRange',
-      ),
-      done: false,
-      icon: Target,
-    },
-
-    {
-      label: t(
-        'aiTrainer.habits.completedSteps',
-      ),
-      done: false,
-      icon: Footprints,
-    },
-
-    {
-      label: t(
-        'aiTrainer.habits.drankWater',
-      ),
-      done: true,
-      icon: Sparkles,
-    },
-  ]
-
-  const loggedDays =
-    COMPLIANCE_DATA.filter(
-      (d) => d.logged,
-    )
-
-  const avgScore =
-    loggedDays.length > 0
-      ? Math.round(
-          loggedDays.reduce(
-            (sum, d) =>
-              sum + d.score,
-            0,
-          ) / loggedDays.length,
-        )
-      : 0
-
-  const streak =
-    COMPLIANCE_DATA.filter(
-      (d) => d.logged,
-    ).length
-
-  const activeWarnings =
-    WARNINGS.filter(
-      (w) => !dismissed.has(w.id),
-    )
-
-  const dismiss = (id: string) => {
-    setDismissed(
-      (prev) =>
-        new Set(prev).add(id),
-    )
-  }
-
-  /*
-   * AI PLANNI YANGILASH
-   */
-  const regenerateTrainerPlan =
-    async () => {
-      try {
-        setTrainerLoading(true)
-        setTrainerError('')
-
-        const profile =
-          userData || {}
-
-        const requestBody = {
-          goal:
-            profile.goal ||
-            profile.goalType ||
-            'healthy lifestyle',
-
-          weight:
-            Number(
-              profile.currentWeight ||
-                profile.weight,
-            ) || 60,
-
-          height:
-            Number(profile.height) || 165,
-
-          age:
-            Number(profile.age) || 18,
-
-          gender:
-            profile.gender || 'female',
-
-          fitnessLevel:
-            profile.activity ||
-            profile.fitnessLevel ||
-            'beginner',
+                setError(
+                    err?.message ||
+                    t.errorTitle
+                )
+            } finally {
+                setLoading(false)
+            }
         }
 
-        const response =
-          await apiFetch(
-            '/api/ai/trainer',
+    useEffect(() => {
+        generateTrainerPlan()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const updatePreference = (
+        key: keyof TrainerPreferences,
+        value: string
+    ) => {
+        setPreferences((prev) => ({
+            ...prev,
+            [key]: value,
+        }))
+    }
+
+    const getPlanSections = () => {
+        if (!plan) return []
+
+        const normalized =
+            plan.replace(/\r/g, '').trim()
+
+        const headings = [
             {
-              method: 'POST',
-              body: JSON.stringify(
-                requestBody,
-              ),
+                key: 'today',
+                labels: [
+                    '1. TODAY',
+                    'TODAY',
+                    '1. BUGUN',
+                    'BUGUN',
+                    '1. СЕГОДНЯ',
+                    'СЕГОДНЯ',
+                ],
+                icon: CalendarDays,
+                title: t.today,
             },
-          )
+            {
+                key: 'weekly',
+                labels: [
+                    '2. WEEKLY PLAN',
+                    'WEEKLY PLAN',
+                    '2. HAFTALIK REJA',
+                    'HAFTALIK REJA',
+                    '2. ПЛАН НА НЕДЕЛЮ',
+                    'ПЛАН НА НЕДЕЛЮ',
+                ],
+                icon: CalendarDays,
+                title: t.weekly,
+            },
+            {
+                key: 'workout',
+                labels: [
+                    '3. WORKOUT',
+                    'WORKOUT',
+                    '3. MASHQ',
+                    'MASHQ',
+                    '3. ТРЕНИРОВКА',
+                    'ТРЕНИРОВКА',
+                ],
+                icon: Dumbbell,
+                title: t.workout,
+            },
+            {
+                key: 'recovery',
+                labels: [
+                    '4. REST & RECOVERY',
+                    'REST & RECOVERY',
+                    '4. DAM OLISH',
+                    'DAM OLISH',
+                    '4. ВОССТАНОВЛЕНИЕ',
+                    'ВОССТАНОВЛЕНИЕ',
+                ],
+                icon: HeartPulse,
+                title: t.recovery,
+            },
+            {
+                key: 'nutrition',
+                labels: [
+                    '5. NUTRITION HABITS',
+                    'NUTRITION HABITS',
+                    '5. OVQATLANISH ODATLARI',
+                    'OVQATLANISH ODATLARI',
+                    '5. ПИТАНИЕ',
+                    'ПИТАНИЕ',
+                ],
+                icon: Utensils,
+                title: t.nutrition,
+            },
+            {
+                key: 'motivation',
+                labels: [
+                    '7. MOTIVATION',
+                    'MOTIVATION',
+                    '7. MOTIVATSIYA',
+                    'MOTIVATSIYA',
+                    '7. МОТИВАЦИЯ',
+                    'МОТИВАЦИЯ',
+                ],
+                icon: Sparkles,
+                title: t.motivation,
+            },
+        ]
 
-        setTrainerPlan(
-          response?.plan || '',
-        )
-      } catch (error: any) {
-        console.error(
-          'Regenerate trainer error:',
-          error,
-        )
+        const lines =
+            normalized.split('\n')
 
-        setTrainerError(
-          error?.message ||
-            'AI Trainer xatoligi',
-        )
-      } finally {
-        setTrainerLoading(false)
-      }
+        const sections: {
+            key: string
+            title: string
+            content: string
+            icon: any
+        }[] = []
+
+        let current:
+            | {
+                key: string
+                title: string
+                content: string
+                icon: any
+            }
+            | null = null
+
+        for (const line of lines) {
+            const clean =
+                line
+                    .replace(/\*\*/g, '')
+                    .replace(/^#+\s*/, '')
+                    .trim()
+
+            const heading =
+                headings.find((item) =>
+                    item.labels.some(
+                        (label) =>
+                            clean.toUpperCase() ===
+                            label.toUpperCase()
+                    )
+                )
+
+            if (heading) {
+                if (current) {
+                    sections.push(current)
+                }
+
+                current = {
+                    key: heading.key,
+                    title: heading.title,
+                    content: '',
+                    icon: heading.icon,
+                }
+
+                continue
+            }
+
+            if (current) {
+                current.content +=
+                    `${line}\n`
+            }
+        }
+
+        if (current) {
+            sections.push(current)
+        }
+
+        if (!sections.length) {
+            return [
+                {
+                    key: 'plan',
+                    title: t.yourPlan,
+                    content: normalized,
+                    icon: Sparkles,
+                },
+            ]
+        }
+
+        return sections.map((section) => ({
+            ...section,
+            content:
+                section.content.trim(),
+        }))
     }
 
-  return (
-    <div className="mx-auto max-w-[1080px]">
-      {/* Header */}
-      <div className="mb-7">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-          <ShieldCheck className="size-3.5" />
+    const planSections =
+        getPlanSections()
 
-          {t('aiTrainer.badge')}
-        </div>
+    // ============================================================
+    // AI CHAT
+    // ============================================================
 
-        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
-          {t('aiTrainer.title')}
-        </h1>
+    const sendChatMessage =
+        async () => {
+            const message =
+                chatInput.trim()
 
-        <p className="mt-2 text-sm text-slate-400">
-          {t('aiTrainer.subtitle')}
-        </p>
-      </div>
+            if (
+                !message ||
+                chatLoading
+            ) {
+                return
+            }
 
-      {/* Top stats */}
-      <section className="grid gap-4 sm:grid-cols-3">
-        {/* Weekly score */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-300">
-              <Target className="size-5" />
-            </div>
+            setChatError('')
 
-            <span className="text-3xl font-bold text-emerald-300">
-              {avgScore}%
-            </span>
-          </div>
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    role: 'user',
+                    text: message,
+                },
+            ])
 
-          <p className="mt-4 text-sm font-medium text-slate-400">
-            {t(
-              'aiTrainer.stats.weeklyScore',
-            )}
-          </p>
+            setChatInput('')
+            setChatLoading(true)
 
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300"
-              style={{
-                width: `${avgScore}%`,
-                boxShadow:
-                  '0 0 10px rgba(52,211,153,0.3)',
-              }}
-            />
-          </div>
-        </div>
+            try {
+                const data =
+                    await apiFetch(
+                        '/api/ai/chat',
+                        {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                message,
+                            }),
+                        }
+                    )
 
-        {/* Streak */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-amber-400/15 text-amber-300">
-              <Flame className="size-5" />
-            </div>
+                const reply =
+                    data.reply ||
+                    data.data?.reply ||
+                    ''
 
-            <span className="text-3xl font-bold text-amber-300">
-              {streak}
-            </span>
-          </div>
+                if (!reply) {
+                    throw new Error(
+                        'AI bo‘sh javob qaytardi'
+                    )
+                }
 
-          <p className="mt-4 text-sm font-medium text-slate-400">
-            {t(
-              'aiTrainer.stats.loggingStreak',
-            )}
-          </p>
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        role: 'assistant',
+                        text: reply,
+                    },
+                ])
+            } catch (err: any) {
+                console.error(
+                    'AI Chat error:',
+                    err
+                )
 
-          <div className="mt-3 flex gap-1">
-            {COMPLIANCE_DATA.map(
-              (d, i) => (
-                <div
-                  key={i}
-                  className={`h-2 flex-1 rounded-full ${
-                    d.logged
-                      ? 'bg-amber-400/80'
-                      : 'bg-rose-400/40'
-                  }`}
-                />
-              ),
-            )}
-          </div>
-        </div>
+                setChatError(
+                    err?.message ||
+                    t.chatError
+                )
+            } finally {
+                setChatLoading(false)
+            }
+        }
 
-        {/* Warnings */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-rose-400/15 text-rose-300">
-              <AlertTriangle className="size-5" />
-            </div>
+    const handleChatKeyDown = (
+        event: React.KeyboardEvent<HTMLInputElement>
+    ) => {
+        if (
+            event.key === 'Enter' &&
+            !event.shiftKey
+        ) {
+            event.preventDefault()
+            sendChatMessage()
+        }
+    }
 
-            <span className="text-3xl font-bold text-rose-300">
-              {activeWarnings.length}
-            </span>
-          </div>
+    // ============================================================
+    // UI
+    // ============================================================
 
-          <p className="mt-4 text-sm font-medium text-slate-400">
-            {t(
-              'aiTrainer.stats.activeWarnings',
-            )}
-          </p>
+    return (
+        <div className="w-full space-y-6 text-white">
+            {/* HEADER */}
 
-          <p className="mt-2 text-xs text-slate-500">
-            {dismissed.size > 0
-              ? `${dismissed.size} ${t(
-                  'aiTrainer.stats.dismissed',
-                )}`
-              : t(
-                  'aiTrainer.stats.noDismissed',
-                )}
-          </p>
-        </div>
-      </section>
+            <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div className="mb-2 flex items-center gap-2">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#70d5b7]/15">
+                                <Sparkles
+                                    size={20}
+                                    className="text-[#70d5b7]"
+                                />
+                            </div>
 
-      {/* Weekly compliance */}
-      <section className="mt-5 rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-white">
-              {t(
-                'aiTrainer.chart.title',
-              )}
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-400">
-              {t(
-                'aiTrainer.chart.subtitle',
-              )}
-            </p>
-          </div>
-
-          <Zap className="size-5 text-emerald-400" />
-        </div>
-
-        <div className="mt-6 flex h-44 items-end gap-3">
-          {COMPLIANCE_DATA.map(
-            (d, i) => (
-              <div
-                key={i}
-                className="flex flex-1 flex-col items-center gap-2"
-              >
-                <div className="relative w-full">
-                  {!d.logged && (
-                    <div className="absolute -top-1 left-1/2 z-10 flex size-5 -translate-x-1/2 items-center justify-center rounded-full bg-rose-400/20 ring-1 ring-rose-400/40">
-                      <X className="size-3 text-rose-300" />
-                    </div>
-                  )}
-
-                  <div
-                    className={`w-full rounded-t-lg transition-all ${
-                      d.logged
-                        ? 'bg-emerald-400/80 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
-                        : 'bg-rose-400/20'
-                    }`}
-                    style={{
-                      height: d.logged
-                        ? `${d.score * 1.4}px`
-                        : '8px',
-                    }}
-                  />
-                </div>
-
-                <span
-                  className={`text-xs ${
-                    d.logged
-                      ? 'text-slate-500'
-                      : 'text-rose-400/60'
-                  }`}
-                >
-                  {d.day}
-                </span>
-
-                {d.logged && (
-                  <span className="text-[10px] font-semibold text-emerald-300">
-                    {d.score}%
-                  </span>
-                )}
-              </div>
-            ),
-          )}
-        </div>
-      </section>
-
-      {/* Warnings + Habits */}
-      <section className="mt-5 grid gap-5 xl:grid-cols-[1.3fr_1fr]">
-        {/* Warnings */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">
-                {t(
-                  'aiTrainer.warningsSection.title',
-                )}
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-400">
-                {t(
-                  'aiTrainer.warningsSection.subtitle',
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3">
-            {activeWarnings.map(
-              (w) => {
-                const Icon = w.icon
-                const style =
-                  severityStyle(
-                    w.severity,
-                  )
-
-                return (
-                  <div
-                    key={w.id}
-                    className={`rounded-xl border ${style.border} ${style.bg} p-4`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${style.chip}`}
-                      >
-                        <Icon className="size-4.5" />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-semibold text-white">
-                            {w.title}
-                          </h3>
-
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${style.chip}`}
-                          >
-                            {t(
-                              `aiTrainer.severity.${w.severity}`,
-                            )}
-                          </span>
+                            <h1 className="text-2xl font-semibold tracking-tight">
+                                {t.title}
+                            </h1>
                         </div>
 
-                        <p className="mt-1.5 text-xs leading-5 text-slate-400">
-                          {w.detail}
+                        <p className="max-w-2xl text-sm leading-6 text-white/55">
+                            {t.subtitle}
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={generateTrainerPlan}
+                        disabled={loading}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#70d5b7] px-4 py-2.5 text-sm font-medium text-[#07110f] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <RefreshCw
+                            size={16}
+                            className={
+                                loading
+                                    ? 'animate-spin'
+                                    : ''
+                            }
+                        />
+
+                        {t.regenerate}
+                    </button>
+                </div>
+            </section>
+
+            {/* SAFE NOTICE */}
+
+            <section className="rounded-2xl border border-[#70d5b7]/20 bg-[#70d5b7]/5 p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                    <ShieldCheck
+                        size={20}
+                        className="mt-0.5 shrink-0 text-[#70d5b7]"
+                    />
+
+                    <div>
+                        <h3 className="font-medium text-white">
+                            {t.safeTitle}
+                        </h3>
+
+                        <p className="mt-1 text-sm leading-6 text-white/55">
+                            {t.safeText}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* PREFERENCES */}
+
+            <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
+                <div className="mb-5">
+                    <h2 className="text-lg font-semibold">
+                        {t.preferences}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-white/45">
+                        {t.trainerDesc}
+                    </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <PreferenceSelect
+                        label={t.fitnessLevel}
+                        value={
+                            preferences.fitnessLevel
+                        }
+                        onChange={(value) =>
+                            updatePreference(
+                                'fitnessLevel',
+                                value
+                            )
+                        }
+                        options={[
+                            [
+                                'beginner',
+                                t.beginner,
+                            ],
+                            [
+                                'intermediate',
+                                t.intermediate,
+                            ],
+                            [
+                                'advanced',
+                                t.advanced,
+                            ],
+                        ]}
+                    />
+
+                    <PreferenceSelect
+                        label={t.activityLevel}
+                        value={
+                            preferences.activityLevel
+                        }
+                        onChange={(value) =>
+                            updatePreference(
+                                'activityLevel',
+                                value
+                            )
+                        }
+                        options={[
+                            ['low', t.low],
+                            [
+                                'normal',
+                                t.normal,
+                            ],
+                            [
+                                'active',
+                                t.active,
+                            ],
+                        ]}
+                    />
+
+                    <PreferenceSelect
+                        label={
+                            t.preferredActivity
+                        }
+                        value={
+                            preferences.preferredActivity
+                        }
+                        onChange={(value) =>
+                            updatePreference(
+                                'preferredActivity',
+                                value
+                            )
+                        }
+                        options={[
+                            [
+                                'general movement',
+                                t.generalMovement,
+                            ],
+                            [
+                                'walking',
+                                t.walking,
+                            ],
+                            [
+                                'running',
+                                t.running,
+                            ],
+                            ['gym', t.gym],
+                            [
+                                'home workout',
+                                t.homeWorkout,
+                            ],
+                            [
+                                'cycling',
+                                t.cycling,
+                            ],
+                        ]}
+                    />
+
+                    <PreferenceSelect
+                        label={t.availableDays}
+                        value={
+                            preferences.availableDays
+                        }
+                        onChange={(value) =>
+                            updatePreference(
+                                'availableDays',
+                                value
+                            )
+                        }
+                        options={[
+                            [
+                                'flexible',
+                                t.flexible,
+                            ],
+                            [
+                                '3 days',
+                                t.threeDays,
+                            ],
+                            [
+                                '4 days',
+                                t.fourDays,
+                            ],
+                            [
+                                '5 days',
+                                t.fiveDays,
+                            ],
+                        ]}
+                    />
+
+                    <div className="sm:col-span-2">
+                        <PreferenceSelect
+                            label={t.focus}
+                            value={
+                                preferences.focus
+                            }
+                            onChange={(value) =>
+                                updatePreference(
+                                    'focus',
+                                    value
+                                )
+                            }
+                            options={[
+                                [
+                                    'healthy habits',
+                                    t.healthyHabits,
+                                ],
+                                [
+                                    'general fitness',
+                                    t.generalFitness,
+                                ],
+                                [
+                                    'strength',
+                                    t.strength,
+                                ],
+                                [
+                                    'mobility',
+                                    t.mobility,
+                                ],
+                            ]}
+                        />
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={
+                        generateTrainerPlan
+                    }
+                    disabled={loading}
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#70d5b7] px-5 py-3 text-sm font-semibold text-[#07110f] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                >
+                    <Sparkles size={17} />
+                    {t.generate}
+                </button>
+            </section>
+
+            {/* AI PLAN */}
+
+            <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
+                <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#70d5b7]/10">
+                        <Dumbbell
+                            size={20}
+                            className="text-[#70d5b7]"
+                        />
+                    </div>
+
+                    <div>
+                        <h2 className="text-lg font-semibold">
+                            {t.yourPlan}
+                        </h2>
+
+                        <p className="text-sm text-white/45">
+                            {t.trainer}
+                        </p>
+                    </div>
+                </div>
+
+                {loading && (
+                    <div className="rounded-2xl border border-white/10 bg-black/10 p-6">
+                        <div className="flex items-center gap-3 text-white/60">
+                            <RefreshCw
+                                size={18}
+                                className="animate-spin text-[#70d5b7]"
+                            />
+
+                            <span className="text-sm">
+                                {t.loading}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {!loading && error && (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-5">
+                        <p className="text-sm text-red-300">
+                            {error}
                         </p>
 
-                        <div className="mt-3 flex items-start gap-2 rounded-lg bg-slate-900/40 p-3">
-                          <Sparkles className="size-3.5 shrink-0 text-emerald-400" />
-
-                          <p className="text-xs leading-5 text-slate-300">
-                            <span className="font-semibold text-emerald-300">
-                              {t(
-                                'aiTrainer.habitCorrection',
-                              )}{' '}
-                            </span>
-
-                            {w.tip}
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          dismiss(w.id)
-                        }
-                        className="flex size-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-slate-300"
-                        aria-label={t(
-                          'aiTrainer.dismiss',
-                        )}
-                      >
-                        <X className="size-4" />
-                      </button>
+                        <button
+                            type="button"
+                            onClick={
+                                generateTrainerPlan
+                            }
+                            className="mt-4 rounded-xl border border-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/5"
+                        >
+                            {t.retry}
+                        </button>
                     </div>
-                  </div>
-                )
-              },
-            )}
+                )}
 
-            {activeWarnings.length ===
-              0 && (
-              <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
-                  <Check className="size-6" />
+                {!loading &&
+                    !error &&
+                    !plan && (
+                        <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+                            <Sparkles
+                                size={28}
+                                className="mx-auto mb-3 text-white/25"
+                            />
+
+                            <p className="text-sm text-white/45">
+                                {t.empty}
+                            </p>
+                        </div>
+                    )}
+
+                {!loading &&
+                    !error &&
+                    plan && (
+                        <div className="grid gap-4 lg:grid-cols-2">
+                            {planSections.map(
+                                (section) => {
+                                    const Icon =
+                                        section.icon
+
+                                    return (
+                                        <div
+                                            key={
+                                                section.key
+                                            }
+                                            className="rounded-2xl border border-white/10 bg-[#0b1215] p-5"
+                                        >
+                                            <div className="mb-4 flex items-center gap-3">
+                                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#70d5b7]/10">
+                                                    <Icon
+                                                        size={
+                                                            18
+                                                        }
+                                                        className="text-[#70d5b7]"
+                                                    />
+                                                </div>
+
+                                                <h3 className="font-medium">
+                                                    {
+                                                        section.title
+                                                    }
+                                                </h3>
+                                            </div>
+
+                                            <div className="whitespace-pre-line text-sm leading-7 text-white/65">
+                                                {
+                                                    section.content
+                                                }
+                                            </div>
+                                        </div>
+                                    )
+                                }
+                            )}
+                        </div>
+                    )}
+            </section>
+
+            {/* ================================================== */}
+            {/* AI CHAT - SAME SECTION / SAME FILE                */}
+            {/* ================================================== */}
+
+            <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
+                <div className="mb-5 flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#70d5b7]/10">
+                        <MessageCircle
+                            size={20}
+                            className="text-[#70d5b7]"
+                        />
+                    </div>
+
+                    <div>
+                        <h2 className="text-lg font-semibold">
+                            {t.chatTitle}
+                        </h2>
+
+                        <p className="mt-1 text-sm leading-6 text-white/45">
+                            {t.chatSubtitle}
+                        </p>
+                    </div>
                 </div>
 
-                <p className="text-sm font-semibold text-white">
-                  {t(
-                    'aiTrainer.allClear.title',
-                  )}
-                </p>
+                {/* CHAT MESSAGES */}
 
-                <p className="text-xs text-slate-500">
-                  {t(
-                    'aiTrainer.allClear.subtitle',
-                  )}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+                <div className="min-h-[280px] max-h-[520px] space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-[#0b1215] p-4">
+                    {chatMessages.length === 0 && (
+                        <div className="flex min-h-[240px] items-center justify-center px-5 text-center">
+                            <div className="max-w-md">
+                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#70d5b7]/10">
+                                    <MessageCircle
+                                        size={22}
+                                        className="text-[#70d5b7]"
+                                    />
+                                </div>
 
-        {/* Habits */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">
-                {t(
-                  'aiTrainer.habitsSection.title',
-                )}
-              </h2>
+                                <p className="text-sm leading-6 text-white/45">
+                                    {t.chatEmpty}
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
-              <p className="mt-1 text-sm text-slate-400">
-                {t(
-                  'aiTrainer.habitsSection.subtitle',
-                )}
-              </p>
-            </div>
-          </div>
+                    {chatMessages.map(
+                        (message, index) => (
+                            <div
+                                key={`${message.role}-${index}`}
+                                className={`flex ${
+                                    message.role ===
+                                    'user'
+                                        ? 'justify-end'
+                                        : 'justify-start'
+                                }`}
+                            >
+                                <div
+                                    className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[75%] ${
+                                        message.role ===
+                                        'user'
+                                            ? 'bg-[#70d5b7] text-[#07110f]'
+                                            : 'border border-white/10 bg-[#111a1d] text-white/70'
+                                    }`}
+                                >
+                                    <div className="whitespace-pre-line">
+                                        {
+                                            message.text
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    )}
 
-          <div className="mt-5 flex flex-col gap-2.5">
-            {HABITS.map(
-              (habit, i) => {
-                const Icon =
-                  habit.icon
+                    {chatLoading && (
+                        <div className="flex justify-start">
+                            <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#111a1d] px-4 py-3 text-sm text-white/50">
+                                <Sparkles
+                                    size={16}
+                                    className="animate-pulse text-[#70d5b7]"
+                                />
 
-                return (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 rounded-xl p-3.5 transition ${
-                      habit.done
-                        ? 'bg-emerald-400/[0.07]'
-                        : 'bg-slate-800/40'
-                    }`}
-                  >
-                    <div
-                      className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
-                        habit.done
-                          ? 'bg-emerald-400/15 text-emerald-300'
-                          : 'bg-slate-700/50 text-slate-500'
-                      }`}
-                    >
-                      <Icon className="size-4.5" />
+                                {t.chatLoading}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {chatError && (
+                    <div className="mt-3 rounded-xl border border-red-400/20 bg-red-400/5 px-4 py-3">
+                        <p className="text-sm text-red-300">
+                            {chatError}
+                        </p>
                     </div>
-
-                    <span
-                      className={`flex-1 text-sm ${
-                        habit.done
-                          ? 'text-slate-200'
-                          : 'text-slate-500'
-                      }`}
-                    >
-                      {habit.label}
-                    </span>
-
-                    <span
-                      className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                        habit.done
-                          ? 'border-emerald-400 bg-emerald-400 text-slate-950'
-                          : 'border-slate-700 text-transparent'
-                      }`}
-                    >
-                      <Check className="size-3.5" />
-                    </span>
-                  </div>
-                )
-              },
-            )}
-          </div>
-
-          {/* REAL AI TRAINER RESPONSE */}
-          <div className="mt-5 rounded-xl bg-slate-800/40 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-                {t(
-                  'aiTrainer.recommendation.title',
                 )}
-              </p>
 
-              <button
-                type="button"
-                onClick={
-                  regenerateTrainerPlan
-                }
-                disabled={trainerLoading}
-                className="rounded-lg bg-emerald-400/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-300 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {trainerLoading
-                  ? '...'
-                  : language === 'uz'
-                    ? 'Yangilash'
-                    : language ===
-                        'ru'
-                      ? 'Обновить'
-                      : 'Refresh'}
-              </button>
-            </div>
+                {/* CHAT INPUT */}
 
-            {trainerLoading ? (
-              <div className="mt-4 flex items-center gap-3">
-                <div className="size-5 animate-spin rounded-full border-2 border-emerald-400/20 border-t-emerald-400" />
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <input
+                        type="text"
+                        value={chatInput}
+                        onChange={(event) =>
+                            setChatInput(
+                                event.target.value
+                            )
+                        }
+                        onKeyDown={
+                            handleChatKeyDown
+                        }
+                        disabled={chatLoading}
+                        placeholder={
+                            t.chatPlaceholder
+                        }
+                        className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#0b1215] px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-[#70d5b7]/40 disabled:opacity-50"
+                    />
 
-                <p className="text-sm text-slate-400">
-                  {language ===
-                  'uz'
-                    ? 'AI siz uchun reja tayyorlamoqda...'
-                    : language ===
-                        'ru'
-                      ? 'AI готовит план для вас...'
-                      : 'AI is preparing your plan...'}
-                </p>
-              </div>
-            ) : trainerError ? (
-              <div className="mt-3 rounded-lg border border-rose-400/20 bg-rose-400/5 p-3">
-                <p className="text-xs text-rose-300">
-                  {trainerError}
-                </p>
-              </div>
-            ) : trainerPlan ? (
-              <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">
-                {trainerPlan}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-slate-500">
-                {language ===
-                'uz'
-                  ? 'AI Trainer hozircha tavsiya bermadi.'
-                  : language ===
-                      'ru'
-                    ? 'AI пока не дал рекомендацию.'
-                    : 'AI has not provided a recommendation yet.'}
-              </p>
-            )}
-          </div>
+                    <button
+                        type="button"
+                        onClick={
+                            sendChatMessage
+                        }
+                        disabled={
+                            !chatInput.trim() ||
+                            chatLoading
+                        }
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#70d5b7] px-5 py-3 text-sm font-semibold text-[#07110f] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <Send size={16} />
+                        {t.send}
+                    </button>
+                </div>
+            </section>
         </div>
-      </section>
-    </div>
-  )
+    )
+}
+
+// ============================================================
+// PREFERENCE SELECT
+// ============================================================
+
+function PreferenceSelect({
+    label,
+    value,
+    onChange,
+    options,
+}: {
+    label: string
+    value: string
+    onChange: (value: string) => void
+    options: [string, string][]
+}) {
+    return (
+        <label className="block">
+            <span className="mb-2 block text-sm text-white/55">
+                {label}
+            </span>
+
+            <div className="relative">
+                <select
+                    value={value}
+                    onChange={(event) =>
+                        onChange(
+                            event.target.value
+                        )
+                    }
+                    className="w-full appearance-none rounded-xl border border-white/10 bg-[#0b1215] px-4 py-3 pr-10 text-sm text-white outline-none transition focus:border-[#70d5b7]/40"
+                >
+                    {options.map(
+                        ([optionValue, optionLabel]) => (
+                            <option
+                                key={optionValue}
+                                value={optionValue}
+                                className="bg-[#0b1215]"
+                            >
+                                {optionLabel}
+                            </option>
+                        )
+                    )}
+                </select>
+
+                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/35">
+                    <Check size={15} />
+                </div>
+            </div>
+        </label>
+    )
 }

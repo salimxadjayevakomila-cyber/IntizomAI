@@ -249,7 +249,7 @@ export default function Page() {
         false,
     ])
 
-   
+
 
     const [authMode, setAuthMode] = useState<
         'register' | 'login'
@@ -1010,12 +1010,19 @@ export default function Page() {
         setScanError('')
 
         try {
+            const token = localStorage.getItem('token')
+
+            if (!token) {
+                throw new Error('Iltimos, qaytadan login qiling')
+            }
+
             const response = await fetch(
                 'http://localhost:5001/api/ai/analyze',
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
                         image: imageBase64,
@@ -1346,24 +1353,65 @@ export default function Page() {
             'aitrainer',
             'settings',
         ].includes(activeNav)
- const finishAuth = async () => {
-    try {
-        // LOGIN
-        if (authMode === 'login') {
-            if (!authName.trim() || !authPassword.trim()) {
-                alert('Ism va parolni kiriting')
+    const finishAuth = async () => {
+        try {
+            // LOGIN
+            if (authMode === 'login') {
+                if (!authName.trim() || !authPassword.trim()) {
+                    alert('Ism va parolni kiriting')
+                    return
+                }
+
+                console.log('LOGIN DATA:', {
+                    name: authName,
+                    password: authPassword,
+                })
+
+                const result = await apiFetch('/api/users/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: authName.trim(),
+                        password: authPassword,
+                    }),
+                })
+
+                localStorage.setItem('token', result.token)
+                localStorage.setItem(
+                    'user',
+                    JSON.stringify(result.data)
+                )
+
+                const user = result.data
+
+                setProfileName(user.name || authName.trim())
+                setAuthAge(String(user.age ?? ''))
+                setAuthWeight(String(user.weight ?? ''))
+                setHeight(String(user.height ?? ''))
+                setGender(user.gender ?? '')
+                setGoal(user.goal || 'Weight loss')
+                setActivity(user.activity || 'Moderately active')
+
+                setScreen('dashboard')
                 return
             }
 
-            console.log('LOGIN DATA:', {
-                name: authName,
-                password: authPassword,
-            })
+            // REGISTER
+            if (
+                !authName.trim() ||
+                !authAge.trim() ||
+                !authWeight.trim() ||
+                !authPassword.trim()
+            ) {
+                alert("Iltimos, barcha kerakli maydonlarni to'ldiring")
+                return
+            }
 
-            const result = await apiFetch('/api/users/login', {
+            const result = await apiFetch('/api/users/register', {
                 method: 'POST',
                 body: JSON.stringify({
                     name: authName.trim(),
+                    age: Number(authAge),
+                    weight: Number(authWeight),
                     password: authPassword,
                 }),
             })
@@ -1377,62 +1425,21 @@ export default function Page() {
             const user = result.data
 
             setProfileName(user.name || authName.trim())
-            setAuthAge(String(user.age ?? ''))
-            setAuthWeight(String(user.weight ?? ''))
-            setHeight(String(user.height ?? ''))
-            setGender(user.gender ?? '')
-            setGoal(user.goal || 'Weight loss')
-            setActivity(user.activity || 'Moderately active')
+            setAuthAge(String(user.age ?? authAge))
+            setAuthWeight(String(user.weight ?? authWeight))
 
-            setScreen('dashboard')
-            return
+            setOnboardingStep(1)
+            setScreen('onboarding')
+        } catch (error) {
+            console.error('Auth error:', error)
+
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Server bilan bog'lanishda xatolik yuz berdi"
+            )
         }
-
-        // REGISTER
-        if (
-            !authName.trim() ||
-            !authAge.trim() ||
-            !authWeight.trim() ||
-            !authPassword.trim()
-        ) {
-            alert("Iltimos, barcha kerakli maydonlarni to'ldiring")
-            return
-        }
-
-        const result = await apiFetch('/api/users/register', {
-            method: 'POST',
-            body: JSON.stringify({
-                name: authName.trim(),
-                age: Number(authAge),
-                weight: Number(authWeight),
-                password: authPassword,
-            }),
-        })
-
-        localStorage.setItem('token', result.token)
-        localStorage.setItem(
-            'user',
-            JSON.stringify(result.data)
-        )
-
-        const user = result.data
-
-        setProfileName(user.name || authName.trim())
-        setAuthAge(String(user.age ?? authAge))
-        setAuthWeight(String(user.weight ?? authWeight))
-
-        setOnboardingStep(1)
-        setScreen('onboarding')
-    } catch (error) {
-        console.error('Auth error:', error)
-
-        alert(
-            error instanceof Error
-                ? error.message
-                : "Server bilan bog'lanishda xatolik yuz berdi"
-        )
     }
-}
     const nextOnboarding = async () => {
         if (onboardingStep < 5) {
             setOnboardingStep((step) => step + 1)
