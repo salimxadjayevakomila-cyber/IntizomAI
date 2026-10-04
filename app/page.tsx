@@ -55,8 +55,8 @@ import SettingsContent from '@/components/sections/SettingsContent'
 import { useLanguage } from '@/contexts/language-context'
 
 const API_URL =
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:5001'
+    'https://intizom-ai-backend.onrender.com'
+    
 
 const apiFetch = async (
     endpoint: string,
@@ -994,156 +994,116 @@ export default function Page() {
             0.9
         )
     }
-    /*
-    * =========================================================
-    * AI ANALYZE
-    * =========================================================
-    */
-
-    const analyzeMeal = async () => {
-
-        if (!imageBase64 || isAnalyzing) {
-            return
-        }
-
-        setIsAnalyzing(true)
-        setScanError('')
-
-        try {
-            const token = localStorage.getItem('token')
-
-            if (!token) {
-                throw new Error('Iltimos, qaytadan login qiling')
-            }
-
-            const response = await fetch(
-                'http://localhost:5001/api/ai/analyze',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        image: imageBase64,
-                        foodName:
-                            foodName.trim() || undefined,
-                    }),
-                }
-            )
-
-            let data: any = null
-
-            try {
-                data = await response.json()
-            } catch {
-                throw new Error(
-                    'Backend JSON response qaytarmadi.'
-                )
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data?.message ||
-                    data?.error ||
-                    'AI analysis failed'
-                )
-            }
-
-            const result =
-                data?.data ??
-                data?.result ??
-                data
-
-            const detectedName =
-                result?.name ??
-                result?.foodName ??
-                result?.food ??
-                result?.dishName ??
-                result?.detectedFood ??
-                'Unknown food'
-
-            const calories = Number(
-                result?.calories ??
-                result?.kcal ??
-                result?.calorie ??
-                result?.nutrition?.calories ??
-                result?.nutrition?.kcal ??
-                result?.macros?.calories ??
-                0
-            )
-
-            const carbs = Number(
-                result?.carbs ??
-                result?.carbohydrates ??
-                result?.nutrition?.carbs ??
-                result?.nutrition?.carbohydrates ??
-                result?.macros?.carbs ??
-                0
-            )
-
-            const protein = Number(
-                result?.protein ??
-                result?.nutrition?.protein ??
-                result?.macros?.protein ??
-                0
-            )
-
-            const fat = Number(
-                result?.fat ??
-                result?.nutrition?.fat ??
-                result?.macros?.fat ??
-                0
-            )
-
-            if (
-                !detectedName ||
-                calories <= 0
-            ) {
-                throw new Error(
-                    'AI response did not contain valid food information.'
-                )
-            }
-
-            /*
-             * AI resultni browserda ko'rsatish
-             */
-            setScanResult({
-                name: detectedName,
-                calories,
-                carbs,
-                protein,
-                fat,
-            })
-
-            /*
-             * Natija oynasini ochiq qoldiramiz
-             */
-            setCameraOpen(false)
-            setModalOpen(true)
-
-            /*
-             * imageBase64 endi kerak emas,
-             * lekin uploaded rasm natija oynasida
-             * ko'rinib turishi uchun uni null qilmaymiz.
-             */
-            setImageBase64(null)
-
-        } catch (error) {
-            console.error(
-                'AI scan error:',
-                error
-            )
-
-            setScanError(
-                error instanceof Error
-                    ? error.message
-                    : 'AI tahlilida xatolik yuz berdi.'
-            )
-        } finally {
-            setIsAnalyzing(false)
-        }
+   const analyzeMeal = async () => {
+    if (!imageBase64 || isAnalyzing) {
+        return
     }
+
+    setIsAnalyzing(true)
+    setScanError('')
+
+    try {
+        const token = localStorage.getItem('token')
+
+        if (!token) {
+            throw new Error(
+                'Iltimos, qaytadan login qiling'
+            )
+        }
+
+       const data = await apiFetch('/api/ai/analyze', {
+    method: 'POST',
+    body: JSON.stringify({
+        image: imageBase64,
+        foodName: foodName.trim() || undefined,
+    }),
+})
+
+        const result =
+            data?.data ??
+            data?.result ??
+            data
+
+        const detectedName =
+            result?.name ??
+            result?.foodName ??
+            result?.food ??
+            result?.dishName ??
+            result?.detectedFood ??
+            'Unknown food'
+
+        const calories = Number(
+            result?.calories ??
+            result?.kcal ??
+            result?.calorie ??
+            result?.nutrition?.calories ??
+            result?.nutrition?.kcal ??
+            result?.macros?.calories ??
+            0
+        )
+
+        const carbs = Number(
+            result?.carbs ??
+            result?.carbohydrates ??
+            result?.nutrition?.carbs ??
+            result?.nutrition?.carbohydrates ??
+            result?.macros?.carbs ??
+            0
+        )
+
+        const protein = Number(
+            result?.protein ??
+            result?.nutrition?.protein ??
+            result?.macros?.protein ??
+            0
+        )
+
+        const fat = Number(
+            result?.fat ??
+            result?.nutrition?.fat ??
+            result?.macros?.fat ??
+            0
+        )
+
+        if (
+            !detectedName ||
+            calories <= 0
+        ) {
+            throw new Error(
+                'AI ovqat maʼlumotlarini to‘g‘ri aniqlay olmadi.'
+            )
+        }
+
+        setScanResult({
+            name: detectedName,
+            calories,
+            carbs,
+            protein,
+            fat,
+        })
+
+        setCameraOpen(false)
+        setModalOpen(true)
+
+        // Natija ko‘rsatilayotganda rasm preview
+        // saqlanib qoladi.
+        setImageBase64(null)
+
+    } catch (error) {
+        console.error(
+            'AI scan error:',
+            error
+        )
+
+        setScanError(
+            error instanceof Error
+                ? error.message
+                : 'AI tahlilida xatolik yuz berdi.'
+        )
+    } finally {
+        setIsAnalyzing(false)
+    }
+}
 
     const navItems: {
         key: NavKey
@@ -1440,67 +1400,72 @@ export default function Page() {
             )
         }
     }
-    const nextOnboarding = async () => {
-        if (onboardingStep < 5) {
-            setOnboardingStep((step) => step + 1)
+      const nextOnboarding = async () => {
+    if (onboardingStep < 5) {
+        setOnboardingStep((step) => step + 1)
+        return
+    }
+
+    try {
+        console.log('1. SAVE BOSHLANDI')
+
+        const token = localStorage.getItem('token')
+
+        console.log('2. TOKEN:', token ? 'BOR' : 'YO‘Q')
+
+        if (!token) {
+            alert('Iltimos, qaytadan login qiling')
+            setScreen('auth')
             return
         }
 
-        try {
-            const token = localStorage.getItem('token')
+        const result = await apiFetch('/api/users/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                age: Number(authAge),
+                weight: Number(authWeight),
+                height: Number(height),
+                gender,
+                goal,
+                activity,
+            }),
+        })
 
-            if (!token) {
-                alert('Iltimos, qaytadan login qiling')
-                setScreen('auth')
-                return
-            }
+        console.log('3. BACKEND RESULT:', result)
 
-            const response = await fetch(
-                'http://localhost:5001/api/users/profile',
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        age: Number(authAge),
-                        weight: Number(authWeight),
-                        height: Number(height),
-                        gender,
-                        goal,
-                        activity,
-                    }),
-                }
-            )
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-                alert(
-                    result.message ||
-                    "Profil ma'lumotlarini saqlashda xatolik"
-                )
-                return
-            }
-
-            localStorage.setItem(
-                'user',
-                JSON.stringify(result.data)
-            )
-
-            setScreen('success')
-        } catch (error) {
-            console.error(
-                'Onboarding save error:',
-                error
-            )
-
-            alert(
-                "Ma'lumotlarni saqlashda xatolik yuz berdi"
+        if (!result?.success) {
+            throw new Error(
+                result?.message ||
+                "Profil ma'lumotlarini saqlashda xatolik"
             )
         }
+
+        console.log('4. DATA:', result.data)
+
+        localStorage.setItem(
+            'user',
+            JSON.stringify(result.data)
+        )
+
+        console.log('5. LOCALSTORAGE SAQLANDI')
+
+        setScreen('success')
+    } catch (error) {
+        console.error(
+            'ONBOARDING SAVE ERROR:',
+            error
+        )
+
+        alert(
+            error instanceof Error
+                ? error.message
+                : "Ma'lumotlarni saqlashda xatolik yuz berdi"
+        )
     }
+}
 
     const previousOnboarding =
         () => {

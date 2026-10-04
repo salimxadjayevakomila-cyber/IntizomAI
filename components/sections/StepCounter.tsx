@@ -13,9 +13,9 @@ import {
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 
-const API_URL =
+ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:5001'
+  'https://intizom-ai-backend.onrender.com'
 
 const apiFetch = async (
   endpoint: string,

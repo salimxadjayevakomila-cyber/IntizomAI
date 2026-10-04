@@ -115,7 +115,7 @@ const RECIPES: Recipe[] = [
     time: 8,
     servings: 1,
     image:
-      'https://www.chiquita.com/wp-content/uploads/2020/03/Banana-oatmeal-with-honey-walnuts-and-cinnamon-1.jpg',
+      ' https://www.chiquita.com/wp-content/uploads/2020/03/Banana-oatmeal-with-honey-walnuts-and-cinnamon-1.jpg',
     ingredients: [
       '50 g oats',
       '200 ml milk',
@@ -143,7 +143,7 @@ const RECIPES: Recipe[] = [
     time: 12,
     servings: 1,
     image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNGT0QeiZoKNmbKnU_B1qLvAt_sqayY5eDQhdjDzC0ygDS1Ix-tvyfDo12&s=10',
+      ' https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNGT0QeiZoKNmbKnU_B1qLvAt_sqayY5eDQhdjDzC0ygDS1Ix-tvyfDo12&s=10',
     ingredients: [
       '3 eggs',
       'Bell pepper',
@@ -412,7 +412,7 @@ const RECIPES: Recipe[] = [
     time: 25,
     servings: 1,
     image:
-      'https://www.allrecipes.com/thmb/CfocX_0yH5_hFxtbFkzoWXrlycs=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/ALR-12720-grilled-salmon-i-VAT-4x3-888cac0fb8a34f6fbde7bf836850cd1c.jpg',
+      ' https://www.allrecipes.com/thmb/CfocX_0yH5_hFxtbFkzoWXrlycs=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/ALR-12720-grilled-salmon-i-VAT-4x3-888cac0fb8a34f6fbde7bf836850cd1c.jpg',
     ingredients: [
       '180 g salmon',
       'Broccoli',
@@ -557,7 +557,7 @@ const RECIPES: Recipe[] = [
     time: 15,
     servings: 1,
     image:
-      'https://i0.wp.com/lakesandlattes.com/wp-content/uploads/2020/04/simple-vegetable-stir-fry-noodles.jpg?fit=850%2C604&ssl=1',
+      ' https://i0.wp.com/lakesandlattes.com/wp-content/uploads/2020/04/simple-vegetable-stir-fry-noodles.jpg?fit=850%2C604&ssl=1',
     ingredients: [
       'Broccoli',
       'Bell pepper',
@@ -588,7 +588,7 @@ const RECIPES: Recipe[] = [
     time: 20,
     servings: 1,
     image:
-      'https://eatwithclarity.com/wp-content/uploads/2020/03/vegan-buddha-bowl.jpg',
+      ' https://eatwithclarity.com/wp-content/uploads/2020/03/vegan-buddha-bowl.jpg',
     ingredients: [
       'Chickpeas',
       'Quinoa',
@@ -795,7 +795,7 @@ const RECIPES: Recipe[] = [
     time: 12,
     servings: 1,
     image:
-      'https://www.daisybeet.com/wp-content/uploads/2023/04/Cottage-Cheese-Breakfast-Bowls-8-728x910.jpg',
+      ' https://www.daisybeet.com/wp-content/uploads/2023/04/Cottage-Cheese-Breakfast-Bowls-8-728x910.jpg',
     ingredients: [
       '3 eggs',
       '100 g cottage cheese',
@@ -910,7 +910,7 @@ const RECIPES: Recipe[] = [
     time: 25,
     servings: 1,
     image:
-      'https://res.cloudinary.com/hksqkdlah/image/upload/c_fill,dpr_2.0,f_auto,fl_lossy.progressive.strip_profile,g_faces:auto,q_auto:low/41765-sfs-grilled-salmon-10664',
+      ' https://res.cloudinary.com/hksqkdlah/image/upload/c_fill,dpr_2.0,f_auto,fl_lossy.progressive.strip_profile,g_faces:auto,q_auto:low/41765-sfs-grilled-salmon-10664',
     ingredients: [
       '150 g salmon',
       '2 eggs',
@@ -1423,7 +1423,7 @@ const RECIPES: Recipe[] = [
     time: 10,
     servings: 1,
     image:
-      'https://www.eatingwell.com/thmb/2CmeKYnsq9Xb_Omoy5ZTna-otWw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Make-Ahead-Freezer-Breakfast-Burrito-with-Eggs-Cheese-and-Spinach-v1-1x1-1-728845a38bf04b9190dfef98047dee1a.jpg',
+      ' https://www.eatingwell.com/thmb/2CmeKYnsq9Xb_Omoy5ZTna-otWw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Make-Ahead-Freezer-Breakfast-Burrito-with-Eggs-Cheese-and-Spinach-v1-1x1-1-728845a38bf04b9190dfef98047dee1a.jpg',
     ingredients: [
       '1 tortilla',
       '2 eggs',
@@ -1479,7 +1479,7 @@ const CATEGORY_LABELS = {
 } as const
 
 /* =========================
-   UI TRANSLATIONS
+   RECIPE TRANSLATIONS
 ========================= */
 
 const RECIPE_TRANSLATIONS = {
@@ -1490,6 +1490,7 @@ const RECIPE_TRANSLATIONS = {
     favorites: 'Sevimlilarim',
     search: 'Retsept qidirish...',
     all: 'Barchasi',
+    calorie: 'Kaloriya',
     allCalories: 'Barcha kaloriyalar',
     under300: '300 kcal gacha',
     medium: '300–500 kcal',
@@ -1507,6 +1508,7 @@ const RECIPE_TRANSLATIONS = {
     protein: 'Protein',
     carbs: 'Uglevod',
     fat: 'Yog‘',
+    about: 'Tavsif',
   },
 
   ru: {
@@ -1516,6 +1518,7 @@ const RECIPE_TRANSLATIONS = {
     favorites: 'Избранное',
     search: 'Поиск рецепта...',
     all: 'Все',
+    calorie: 'Калории',
     allCalories: 'Все калории',
     under300: 'До 300 kcal',
     medium: '300–500 kcal',
@@ -1533,6 +1536,7 @@ const RECIPE_TRANSLATIONS = {
     protein: 'Белок',
     carbs: 'Углеводы',
     fat: 'Жиры',
+    about: 'Описание',
   },
 
   en: {
@@ -1542,6 +1546,7 @@ const RECIPE_TRANSLATIONS = {
     favorites: 'My Favorites',
     search: 'Search recipes...',
     all: 'All',
+    calorie: 'Calories',
     allCalories: 'All calories',
     under300: 'Up to 300 kcal',
     medium: '300–500 kcal',
@@ -1559,512 +1564,7 @@ const RECIPE_TRANSLATIONS = {
     protein: 'Protein',
     carbs: 'Carbs',
     fat: 'Fat',
-  },
-} as const
-
-/* =========================
-   RECIPE TEXT TRANSLATIONS
-========================= */
-
-const RECIPE_TEXT_TRANSLATIONS = {
-  uz: {
-    'breakfast-1': {
-      title: 'Avokadoli tuxumli tost',
-      description:
-        'Qarsildoq butun donli tost ustida yumshoq avokado va mukammal pishirilgan tuxum.',
-    },
-    'breakfast-2': {
-      title: 'Rezavor mevali yogurt',
-      description:
-        'Yangi rezavor mevalar, qaymoqli yogurt va qarsildoq granola bilan oddiy nonushta.',
-    },
-    'breakfast-3': {
-      title: 'Bananli suli bo‘tqasi',
-      description:
-        'Banan va dolchin bilan tayyorlangan iliq va qaymoqli suli bo‘tqasi.',
-    },
-    'breakfast-4': {
-      title: 'Sabzavotli omlet',
-      description:
-        'Rang-barang sabzavotlar va yangi ko‘katlar bilan tayyorlangan yumshoq tuxumli omlet.',
-    },
-    'breakfast-5': {
-      title: 'Yeryong‘oq yog‘li bananli tost',
-      description:
-        'Butun donli non, yeryong‘oq yog‘i va yangi banan bo‘laklari bilan tost.',
-    },
-    'breakfast-6': {
-      title: 'Nonushta pankeyklari',
-      description:
-        'Yangi mevalar bilan tortiladigan yumshoq uy pankeyklari.',
-    },
-
-    'lunch-1': {
-      title: 'Grilda pishirilgan tovuqli bowl',
-      description:
-        'Guruch, sabzavotlar va yangi sous bilan tayyorlangan shirali gril tovuq.',
-    },
-    'lunch-2': {
-      title: 'Tovuqli Sezar salati',
-      description:
-        'Qarsildoq salat barglari, gril tovuq, parmesan va qaymoqli sous.',
-    },
-    'lunch-3': {
-      title: 'Lososli guruch bowl',
-      description:
-        'Yumshoq losos, guruch, bodring va avokado bilan tayyorlangan bowl.',
-    },
-    'lunch-4': {
-      title: 'Kurka go‘shtli wrap',
-      description:
-        'Sabzavotlar va yengil yogurt sousi bilan tayyorlangan yangi kurka wrap.',
-    },
-    'lunch-5': {
-      title: 'Kinoa va tovuqli salat',
-      description:
-        'Tovuq va rang-barang sabzavotlar bilan oqsilga boy kinoa salati.',
-    },
-    'lunch-6': {
-      title: 'Tuna va avokadoli salat',
-      description:
-        'Qaymoqli avokado va qarsildoq sabzavotlar bilan yengil tuna salati.',
-    },
-
-    'dinner-1': {
-      title: 'Grilda pishirilgan losos',
-      description:
-        'Sabzavotlar va limon bilan tortiladigan yumshoq gril losos.',
-    },
-    'dinner-2': {
-      title: 'Sabzavotli tovuq',
-      description:
-        'Rang-barang mavsumiy sabzavotlar bilan tayyorlangan yumshoq tovuq go‘shti.',
-    },
-    'dinner-3': {
-      title: 'Steyk va sabzavotlar',
-      description:
-        'Qovurilgan sabzavotlar bilan tortiladigan shirali mol go‘shti steyki.',
-    },
-    'dinner-4': {
-      title: 'Tovuqli pasta',
-      description:
-        'Ko‘katlar va sabzavotlar bilan tayyorlangan qaymoqli uslubdagi tovuqli pasta.',
-    },
-    'dinner-5': {
-      title: 'Kurka go‘shtli frikadelkalar',
-      description:
-        'Pomidor sousi va sabzavotlar bilan tortiladigan yumshoq kurka frikadelkalari.',
-    },
-    'dinner-6': {
-      title: 'Sabzavotli stir-fry',
-      description:
-        'Yengil mazali sous bilan tezda qovurilgan rang-barang sabzavotlar.',
-    },
-
-    'vegan-1': {
-      title: 'Vegan Buddha bowl',
-      description:
-        'No‘xat, sabzavotlar, don mahsulotlari va avokadodan tayyorlangan rang-barang bowl.',
-    },
-    'vegan-2': {
-      title: 'Avokado va no‘xatli salat',
-      description:
-        'Qarsildoq sabzavotlar va limon bilan yangi no‘xat-avokado salati.',
-    },
-    'vegan-3': {
-      title: 'Vegan guruch bowl',
-      description:
-        'Qovurilgan sabzavotlar va qaymoqli tahini bilan sog‘lom guruch bowl.',
-    },
-    'vegan-4': {
-      title: 'Yasmiqli sabzavotli sho‘rva',
-      description:
-        'Sabzavotlarga boy iliq va to‘yimli yasmiq sho‘rvasi.',
-    },
-    'vegan-5': {
-      title: 'Tofu va sabzavotli bowl',
-      description:
-        'Yengil soya sousi bilan qarsildoq tofu va sabzavotlar.',
-    },
-    'vegan-6': {
-      title: 'O‘rta yer dengizi kinoyasi',
-      description:
-        'Pomidor, bodring, ko‘katlar va zaytun bilan tayyorlangan kinoa.',
-    },
-
-    'protein-1': {
-      title: 'Yuqori proteinli tovuqli bowl',
-      description:
-        'To‘yimli va oqsilga boy taom uchun yog‘siz tovuq, guruch va sabzavotlar.',
-    },
-    'protein-2': {
-      title: 'Proteinli tuxum bowl',
-      description:
-        'Oqsilga boy taom uchun tuxum, tvorog va sabzavotlar.',
-    },
-    'protein-3': {
-      title: 'Yunon yogurti protein bowl',
-      description:
-        'Rezavor mevalar, yong‘oq va ozgina asal bilan yunon yogurti.',
-    },
-    'protein-4': {
-      title: 'Proteinli tuna salati',
-      description:
-        'Tuna, tuxum va yangi sabzavotlardan tayyorlangan yuqori proteinli salat.',
-    },
-    'protein-5': {
-      title: 'Proteinli tovuqli wrap',
-      description:
-        'Tovuq, sabzavotlar va yogurt bilan to‘ldirilgan butun donli wrap.',
-    },
-    'protein-6': {
-      title: 'Proteinli losos likopchasi',
-      description:
-        'Oqsil va foydali ozuqalarga boy losos, tuxum va yangi sabzavotlar.',
-    },
-
-    'lowfat-1': {
-      title: 'Yog‘siz tovuqli salat',
-      description:
-        'Yangi sabzavotlar va limonli yengil sous bilan yog‘siz tovuq.',
-    },
-    'lowfat-2': {
-      title: 'Sabzavotli sho‘rva',
-      description:
-        'Yangi mavsumiy sabzavotlardan tayyorlangan yengil sho‘rva.',
-    },
-    'lowfat-3': {
-      title: 'Bug‘da pishirilgan baliq',
-      description:
-        'Bug‘da pishirilgan sabzavotlar va limon bilan yengil oq baliq.',
-    },
-    'lowfat-4': {
-      title: 'Tovuqli sabzavotli sho‘rva',
-      description:
-        'Ko‘plab sabzavotlar va ko‘katlar bilan iliq tovuq sho‘rvasi.',
-    },
-    'lowfat-5': {
-      title: 'Yangi tuna salati',
-      description:
-        'Qarsildoq sabzavotlar va limon bilan yengil tuna salati.',
-    },
-    'lowfat-6': {
-      title: 'Gril tovuq va brokkoli',
-      description:
-        'Bug‘da pishirilgan brokkoli va ko‘katlar bilan oddiy yog‘siz tovuq.',
-    },
-
-    'sugarfree-1': {
-      title: 'Tuxum va avokado likopchasi',
-      description:
-        'Yangi sabzavotlar bilan oddiy tuxum va avokado, qo‘shimcha shakarsiz.',
-    },
-    'sugarfree-2': {
-      title: 'Tovuqli avokado salati',
-      description:
-        'Avokado va sabzavotlar bilan qo‘shimcha shakarsiz gril tovuq salati.',
-    },
-    'sugarfree-3': {
-      title: 'Losos va sabzavotli bowl',
-      description:
-        'Yangi sabzavotlar va limon bilan sog‘lom losos bowl.',
-    },
-    'sugarfree-4': {
-      title: 'Kurka go‘shtli salat wrap',
-      description:
-        'Kurka go‘shti va qarsildoq sabzavotlar bilan yangi salat bargli wrap.',
-    },
-    'sugarfree-5': {
-      title: 'Yunon salati',
-      description:
-        'Bodring, pomidor, zaytun va fetadan tayyorlangan klassik yangi salat.',
-    },
-    'sugarfree-6': {
-      title: 'Tovuqli ko‘katli likopcha',
-      description:
-        'Ko‘katlar va yangi sabzavotlar bilan grilda pishirilgan tovuq.',
-    },
-
-    'quick-1': {
-      title: 'Tez avokadoli tost',
-      description:
-        'Bir necha daqiqada tayyor bo‘ladigan mazali avokadoli tost.',
-    },
-    'quick-2': {
-      title: 'Yunon yogurti bowl',
-      description:
-        'Mevalar va qarsildoq qo‘shimchalar bilan qaymoqli yogurt.',
-    },
-    'quick-3': {
-      title: 'Kurka go‘shtli sendvich',
-      description:
-        'Butun donli non, kurka go‘shti va sabzavotlardan tayyorlangan yangi sendvich.',
-    },
-    'quick-4': {
-      title: 'Tuna tost',
-      description:
-        'Qaymoqli avokado va yangi ko‘katlar bilan tez tayyorlanadigan tuna tost.',
-    },
-    'quick-5': {
-      title: 'Mevali smoothie bowl',
-      description:
-        'Rezavor mevalar va urug‘lar bilan bezatilgan tetiklashtiruvchi smoothie bowl.',
-    },
-    'quick-6': {
-      title: 'Tuxumli nonushta wrap',
-      description:
-        'Sabzavotlar va pishloq bilan iliq tuxumli wrap.',
-    },
-  },
-
-  ru: {
-    'breakfast-1': {
-      title: 'Тост с авокадо и яйцом',
-      description:
-        'Кремовое авокадо и идеально приготовленное яйцо на хрустящем цельнозерновом тосте.',
-    },
-    'breakfast-2': {
-      title: 'Йогурт с ягодами',
-      description:
-        'Свежие ягоды, кремовый йогурт и хрустящая гранола для простого завтрака.',
-    },
-    'breakfast-3': {
-      title: 'Овсянка с бананом',
-      description:
-        'Тёплая кремовая овсянка с бананом и корицей.',
-    },
-    'breakfast-4': {
-      title: 'Овощной омлет',
-      description:
-        'Пышный омлет с разноцветными овощами и свежей зеленью.',
-    },
-    'breakfast-5': {
-      title: 'Тост с арахисовой пастой и бананом',
-      description:
-        'Цельнозерновой тост с арахисовой пастой и свежими ломтиками банана.',
-    },
-    'breakfast-6': {
-      title: 'Блины на завтрак',
-      description:
-        'Мягкие домашние блины со свежими фруктами.',
-    },
-
-    'lunch-1': {
-      title: 'Боул с курицей на гриле',
-      description:
-        'Сочная курица на гриле с рисом, овощами и свежей заправкой.',
-    },
-    'lunch-2': {
-      title: 'Салат Цезарь с курицей',
-      description:
-        'Хрустящий салат, курица на гриле и пармезан с кремовой заправкой.',
-    },
-    'lunch-3': {
-      title: 'Боул с лососем и рисом',
-      description:
-        'Нежный лосось с рисом, огурцом и авокадо.',
-    },
-    'lunch-4': {
-      title: 'Врап с индейкой',
-      description:
-        'Свежий врап с индейкой, овощами и лёгким йогуртовым соусом.',
-    },
-    'lunch-5': {
-      title: 'Салат с киноа и курицей',
-      description:
-        'Белковый салат с киноа, курицей и разноцветными овощами.',
-    },
-    'lunch-6': {
-      title: 'Салат с тунцом и авокадо',
-      description:
-        'Лёгкий салат с тунцом, кремовым авокадо и хрустящими овощами.',
-    },
-
-    'dinner-1': {
-      title: 'Лосось на гриле',
-      description:
-        'Нежный лосось на гриле с овощами и лимоном.',
-    },
-    'dinner-2': {
-      title: 'Курица с овощами',
-      description:
-        'Нежная куриная грудка с разноцветными сезонными овощами.',
-    },
-    'dinner-3': {
-      title: 'Стейк с овощами',
-      description:
-        'Сочный стейк из говядины с запечёнными овощами.',
-    },
-    'dinner-4': {
-      title: 'Паста с курицей',
-      description:
-        'Паста с курицей, травами и овощами в кремовом стиле.',
-    },
-    'dinner-5': {
-      title: 'Фрикадельки из индейки',
-      description:
-        'Нежные фрикадельки из индейки с томатным соусом и овощами.',
-    },
-    'dinner-6': {
-      title: 'Овощи стир-фрай',
-      description:
-        'Разноцветные овощи, быстро обжаренные с лёгким пикантным соусом.',
-    },
-
-    'vegan-1': {
-      title: 'Веганский Buddha bowl',
-      description:
-        'Яркий боул с нутом, овощами, крупами и авокадо.',
-    },
-    'vegan-2': {
-      title: 'Салат с авокадо и нутом',
-      description:
-        'Свежий нут и авокадо с хрустящими овощами и лимоном.',
-    },
-    'vegan-3': {
-      title: 'Веганский боул с рисом',
-      description:
-        'Полезный рисовый боул с запечёнными овощами и кремовым тахини.',
-    },
-    'vegan-4': {
-      title: 'Чечевичный овощной суп',
-      description:
-        'Тёплый сытный чечевичный суп с большим количеством овощей.',
-    },
-    'vegan-5': {
-      title: 'Боул с тофу и овощами',
-      description:
-        'Хрустящий тофу с овощами и лёгкой соевой заправкой.',
-    },
-    'vegan-6': {
-      title: 'Средиземноморская киноа',
-      description:
-        'Киноа с помидорами, огурцом, зеленью и оливками.',
-    },
-
-    'protein-1': {
-      title: 'Белковый боул с курицей',
-      description:
-        'Нежирная курица, рис и овощи для сытного белкового блюда.',
-    },
-    'protein-2': {
-      title: 'Белковый боул с яйцами',
-      description:
-        'Яйца, творог и овощи для богатого белком блюда.',
-    },
-    'protein-3': {
-      title: 'Протеиновый боул с греческим йогуртом',
-      description:
-        'Греческий йогурт с ягодами, орехами и небольшим количеством мёда.',
-    },
-    'protein-4': {
-      title: 'Белковый салат с тунцом',
-      description:
-        'Тунец, яйца и свежие овощи в белковом салате.',
-    },
-    'protein-5': {
-      title: 'Белковый врап с курицей',
-      description:
-        'Цельнозерновой врап с курицей, овощами и йогуртом.',
-    },
-    'protein-6': {
-      title: 'Белковая тарелка с лососем',
-      description:
-        'Лосось, яйца и свежие овощи для питательного ужина.',
-    },
-
-    'lowfat-1': {
-      title: 'Салат с нежирной курицей',
-      description:
-        'Свежие овощи и нежирная курица с лёгкой лимонной заправкой.',
-    },
-    'lowfat-2': {
-      title: 'Овощной суп',
-      description:
-        'Лёгкий овощной суп из свежих сезонных овощей.',
-    },
-    'lowfat-3': {
-      title: 'Рыба на пару',
-      description:
-        'Нежная белая рыба с овощами на пару и лимоном.',
-    },
-    'lowfat-4': {
-      title: 'Куриный овощной суп',
-      description:
-        'Тёплый куриный суп с большим количеством овощей и зелени.',
-    },
-    'lowfat-5': {
-      title: 'Свежий салат с тунцом',
-      description:
-        'Лёгкий салат с тунцом, хрустящими овощами и лимоном.',
-    },
-    'lowfat-6': {
-      title: 'Курица на гриле с брокколи',
-      description:
-        'Простая нежирная курица с брокколи на пару и зеленью.',
-    },
-
-    'sugarfree-1': {
-      title: 'Тарелка с яйцами и авокадо',
-      description:
-        'Простые яйца и авокадо со свежими овощами без добавленного сахара.',
-    },
-    'sugarfree-2': {
-      title: 'Салат с курицей и авокадо',
-      description:
-        'Курица на гриле с авокадо и овощами без добавленного сахара.',
-    },
-    'sugarfree-3': {
-      title: 'Боул с лососем и овощами',
-      description:
-        'Полезный боул с лососем, свежими овощами и лимоном.',
-    },
-    'sugarfree-4': {
-      title: 'Листовые врапы с индейкой',
-      description:
-        'Свежие листья салата с индейкой и хрустящими овощами.',
-    },
-    'sugarfree-5': {
-      title: 'Греческий салат',
-      description:
-        'Классический свежий салат с огурцом, помидорами, оливками и фетой.',
-    },
-    'sugarfree-6': {
-      title: 'Тарелка с курицей и зеленью',
-      description:
-        'Курица на гриле с зеленью и свежими овощами.',
-    },
-
-    'quick-1': {
-      title: 'Быстрый тост с авокадо',
-      description:
-        'Вкусный тост с авокадо, который готовится всего за несколько минут.',
-    },
-    'quick-2': {
-      title: 'Боул с греческим йогуртом',
-      description:
-        'Кремовый йогурт с фруктами и хрустящими добавками.',
-    },
-    'quick-3': {
-      title: 'Сэндвич с индейкой',
-      description:
-        'Свежий сэндвич с индейкой, овощами и цельнозерновым хлебом.',
-    },
-    'quick-4': {
-      title: 'Тост с тунцом',
-      description:
-        'Быстрый тост с тунцом, кремовым авокадо и свежей зеленью.',
-    },
-    'quick-5': {
-      title: 'Фруктовый smoothie bowl',
-      description:
-        'Освежающий фруктовый боул с ягодами и семенами.',
-    },
-    'quick-6': {
-      title: 'Яичный врап на завтрак',
-      description:
-        'Тёплый яичный врап с овощами и сыром.',
-    },
+    about: 'About',
   },
 } as const
 
@@ -2084,11 +1584,6 @@ const CATEGORIES: RecipeCategory[] = [
   'Sugar Free',
   'Quickly Prepared',
 ]
-
-type RecipeText = {
-  title: string
-  description: string
-}
 
 export default function Recipes() {
   const { language } = useLanguage()
@@ -2117,58 +1612,6 @@ export default function Recipes() {
 
   const [selectedRecipe, setSelectedRecipe] =
     useState<Recipe | null>(null)
-
-  const getRecipeTitle = (recipe: Recipe) => {
-    if (lang === 'uz') {
-      const item = (
-        RECIPE_TEXT_TRANSLATIONS.uz as Record<
-          string,
-          RecipeText
-        >
-      )[recipe.id]
-
-      return item?.title ?? recipe.title
-    }
-
-    if (lang === 'ru') {
-      const item = (
-        RECIPE_TEXT_TRANSLATIONS.ru as Record<
-          string,
-          RecipeText
-        >
-      )[recipe.id]
-
-      return item?.title ?? recipe.title
-    }
-
-    return recipe.title
-  }
-
-  const getRecipeDescription = (recipe: Recipe) => {
-    if (lang === 'uz') {
-      const item = (
-        RECIPE_TEXT_TRANSLATIONS.uz as Record<
-          string,
-          RecipeText
-        >
-      )[recipe.id]
-
-      return item?.description ?? recipe.description
-    }
-
-    if (lang === 'ru') {
-      const item = (
-        RECIPE_TEXT_TRANSLATIONS.ru as Record<
-          string,
-          RecipeText
-        >
-      )[recipe.id]
-
-      return item?.description ?? recipe.description
-    }
-
-    return recipe.description
-  }
 
   useEffect(() => {
     try {
@@ -2224,13 +1667,10 @@ export default function Recipes() {
         activeTab === 'discover' ||
         favorites.includes(recipe.id)
 
-      const title = getRecipeTitle(recipe)
-      const description = getRecipeDescription(recipe)
-
       const searchMatch =
         !query ||
-        title.toLowerCase().includes(query) ||
-        description.toLowerCase().includes(query) ||
+        recipe.title.toLowerCase().includes(query) ||
+        recipe.description.toLowerCase().includes(query) ||
         recipe.category.toLowerCase().includes(query)
 
       let calorieMatch = true
@@ -2262,11 +1702,10 @@ export default function Recipes() {
     search,
     calorieFilter,
     favorites,
-    lang,
   ])
 
   return (
-    <main className="min-h-screen w-full bg-white text-slate-900 !m-0 !p-0">
+   <main className="min-h-screen w-full bg-white text-slate-900 !m-0 !p-0">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div className="mb-7">
@@ -2426,7 +1865,7 @@ export default function Recipes() {
                   <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
                     <img
                       src={recipe.image}
-                      alt={getRecipeTitle(recipe)}
+                      alt={recipe.title}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
 
@@ -2464,11 +1903,11 @@ export default function Recipes() {
                   {/* CONTENT */}
                   <div className="p-4">
                     <h2 className="line-clamp-1 text-lg font-semibold text-slate-900">
-                      {getRecipeTitle(recipe)}
+                      {recipe.title}
                     </h2>
 
                     <p className="mt-1.5 line-clamp-2 min-h-[42px] text-sm leading-5 text-slate-500">
-                      {getRecipeDescription(recipe)}
+                      {recipe.description}
                     </p>
 
                     <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
@@ -2519,11 +1958,7 @@ export default function Recipes() {
             <p className="mt-2 max-w-md text-sm text-slate-500">
               {activeTab === 'favorites'
                 ? copy.addFavorites
-                : lang === 'uz'
-                  ? 'Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.'
-                  : lang === 'ru'
-                    ? 'Попробуйте изменить поиск или фильтры.'
-                    : 'Try changing your search or filters.'}
+                : 'Try changing your search or filters.'}
             </p>
           </div>
         )}
@@ -2545,13 +1980,12 @@ export default function Recipes() {
             <div className="relative aspect-[16/8] overflow-hidden">
               <img
                 src={selectedRecipe.image}
-                alt={getRecipeTitle(selectedRecipe)}
+                alt={selectedRecipe.title}
                 className="h-full w-full object-cover"
               />
 
               <button
                 type="button"
-                aria-label={copy.close}
                 onClick={() =>
                   setSelectedRecipe(null)
                 }
@@ -2572,21 +2006,16 @@ export default function Recipes() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                    {getRecipeTitle(selectedRecipe)}
+                    {selectedRecipe.title}
                   </h2>
 
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
-                    {getRecipeDescription(selectedRecipe)}
+                    {selectedRecipe.description}
                   </p>
                 </div>
 
                 <button
                   type="button"
-                  aria-label={
-                    favorites.includes(selectedRecipe.id)
-                      ? 'Remove from favorites'
-                      : 'Add to favorites'
-                  }
                   onClick={() =>
                     toggleFavorite(
                       selectedRecipe.id,

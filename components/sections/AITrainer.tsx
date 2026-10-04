@@ -15,9 +15,8 @@ import {
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 
-const API_URL =
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:5001'
+ const API_URL =
+    'https://intizom-ai-backend.onrender.com'
 
 type TrainerPreferences = {
     fitnessLevel: string

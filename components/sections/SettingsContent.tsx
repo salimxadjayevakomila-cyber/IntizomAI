@@ -1,6 +1,6 @@
  'use client'
 
- import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
     Bell,
     BellRing,
@@ -21,6 +21,7 @@ import {
     X,
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
+import { requestNotificationPermission } from '@/lib/notifications'
 
 interface SettingsProps {
     profileName: string
@@ -121,7 +122,63 @@ export default function SettingsContent({
                 // Ignore invalid localStorage data
             }
         }
+
+        const notificationEnabled = localStorage.getItem(
+            'intizom-notifications-enabled'
+        )
+
+        if (notificationEnabled === 'false') {
+            setNotifications(false)
+        }
+
+        if (notificationEnabled === 'true') {
+            setNotifications(true)
+        }
     }, [])
+
+    const handleNotificationToggle = async (
+        enabled: boolean
+    ) => {
+        if (!enabled) {
+            setNotifications(false)
+
+            localStorage.setItem(
+                'intizom-notifications-enabled',
+                'false'
+            )
+
+            return
+        }
+
+        const token = await requestNotificationPermission()
+
+        if (!token) {
+            setNotifications(false)
+
+            localStorage.setItem(
+                'intizom-notifications-enabled',
+                'false'
+            )
+
+            return
+        }
+
+        setNotifications(true)
+
+        localStorage.setItem(
+            'intizom-notifications-enabled',
+            'true'
+        )
+
+        localStorage.setItem(
+            'intizom-fcm-token',
+            token
+        )
+
+        console.log(
+            'INTIZOM AI FCM token saved.'
+        )
+    }
 
     const saveSettings = () => {
         const nextName = nameInput.trim() || 'User'
@@ -150,20 +207,22 @@ export default function SettingsContent({
         }, 2200)
     }
 
-  const changeLanguage = (nextLanguage: Language) => {
-    setSettingsLanguage(nextLanguage)
-    setLanguage(nextLanguage)
+    const changeLanguage = (
+        nextLanguage: Language
+    ) => {
+        setSettingsLanguage(nextLanguage)
+        setLanguage(nextLanguage)
 
-    localStorage.setItem(
-        'intizom-settings',
-        JSON.stringify({
-            notifications,
-            mealReminders,
-            theme,
-            language: nextLanguage,
-        })
-    )
-}
+        localStorage.setItem(
+            'intizom-settings',
+            JSON.stringify({
+                notifications,
+                mealReminders,
+                theme,
+                language: nextLanguage,
+            })
+        )
+    }
 
     const confirmReset = () => {
         setShowResetModal(false)
@@ -204,6 +263,7 @@ export default function SettingsContent({
 
     return (
         <div className="space-y-6 pb-10">
+
             {/* Header */}
             <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">
@@ -278,14 +338,18 @@ export default function SettingsContent({
                     <div className="grid gap-3 sm:grid-cols-2">
                         <ChoiceButton
                             selected={gender === 'male'}
-                            onClick={() => setGender('male')}
+                            onClick={() =>
+                                setGender('male')
+                            }
                         >
                             Male
                         </ChoiceButton>
 
                         <ChoiceButton
                             selected={gender === 'female'}
-                            onClick={() => setGender('female')}
+                            onClick={() =>
+                                setGender('female')
+                            }
                         >
                             Female
                         </ChoiceButton>
@@ -320,26 +384,32 @@ export default function SettingsContent({
                 <div className="grid gap-3">
                     <ChoiceButton
                         selected={goal === 'Weight loss'}
-                        onClick={() => setGoal('Weight loss')}
-                        description="Create a calorie deficit target."
+                        onClick={() =>
+                            setGoal('Weight loss')
+                        }
+                        description="Focus on healthy daily habits."
                     >
                         Weight loss
                     </ChoiceButton>
 
                     <ChoiceButton
-                        selected={goal === 'Maintain weight'}
+                        selected={
+                            goal === 'Maintain weight'
+                        }
                         onClick={() =>
                             setGoal('Maintain weight')
                         }
-                        description="Keep your current weight stable."
+                        description="Keep your routine consistent."
                     >
                         Maintain weight
                     </ChoiceButton>
 
                     <ChoiceButton
                         selected={goal === 'Build muscle'}
-                        onClick={() => setGoal('Build muscle')}
-                        description="Support strength and muscle growth."
+                        onClick={() =>
+                            setGoal('Build muscle')
+                        }
+                        description="Support strength and fitness."
                     >
                         Build muscle
                     </ChoiceButton>
@@ -352,9 +422,13 @@ export default function SettingsContent({
 
                     <div className="grid gap-3">
                         <ChoiceButton
-                            selected={activity === 'Low activity'}
+                            selected={
+                                activity === 'Low activity'
+                            }
                             onClick={() =>
-                                setActivity('Low activity')
+                                setActivity(
+                                    'Low activity'
+                                )
                             }
                         >
                             Low activity
@@ -362,19 +436,27 @@ export default function SettingsContent({
 
                         <ChoiceButton
                             selected={
-                                activity === 'Moderately active'
+                                activity ===
+                                'Moderately active'
                             }
                             onClick={() =>
-                                setActivity('Moderately active')
+                                setActivity(
+                                    'Moderately active'
+                                )
                             }
                         >
                             Moderately active
                         </ChoiceButton>
 
                         <ChoiceButton
-                            selected={activity === 'Highly active'}
+                            selected={
+                                activity ===
+                                'Highly active'
+                            }
                             onClick={() =>
-                                setActivity('Highly active')
+                                setActivity(
+                                    'Highly active'
+                                )
                             }
                         >
                             Highly active
@@ -387,12 +469,16 @@ export default function SettingsContent({
             <SettingsCard
                 icon={Droplets}
                 title="Health profile"
-                description="Your current information used for daily targets."
+                description="Your current profile information."
             >
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <InfoBox
                         label="Age"
-                        value={age ? `${age} years` : 'Not set'}
+                        value={
+                            age
+                                ? `${age} years`
+                                : 'Not set'
+                        }
                     />
 
                     <InfoBox
@@ -439,11 +525,17 @@ export default function SettingsContent({
                 description="Control reminders and daily notifications."
             >
                 <ToggleRow
-                    icon={notifications ? BellRing : Bell}
+                    icon={
+                        notifications
+                            ? BellRing
+                            : Bell
+                    }
                     title="Daily notifications"
                     description="Receive useful reminders about your routine."
                     checked={notifications}
-                    onChange={setNotifications}
+                    onChange={
+                        handleNotificationToggle
+                    }
                 />
 
                 <div className="my-4 h-px bg-[#edf1ef]" />
@@ -467,37 +559,53 @@ export default function SettingsContent({
                     <LanguageButton
                         code="uz"
                         label="O‘zbekcha"
-                        selected={settingsLanguage === 'uz'}
-                        onClick={() => changeLanguage('uz')}
+                        selected={
+                            settingsLanguage === 'uz'
+                        }
+                        onClick={() =>
+                            changeLanguage('uz')
+                        }
                     />
 
                     <LanguageButton
                         code="ru"
                         label="Русский"
-                        selected={settingsLanguage === 'ru'}
-                        onClick={() => changeLanguage('ru')}
+                        selected={
+                            settingsLanguage === 'ru'
+                        }
+                        onClick={() =>
+                            changeLanguage('ru')
+                        }
                     />
 
                     <LanguageButton
                         code="en"
                         label="English"
-                        selected={settingsLanguage === 'en'}
-                        onClick={() => changeLanguage('en')}
+                        selected={
+                            settingsLanguage === 'en'
+                        }
+                        onClick={() =>
+                            changeLanguage('en')
+                        }
                     />
                 </div>
 
                 <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
                     <p className="text-xs leading-5 text-amber-700">
-                        Language preference is saved locally. Your
-                        main language context controls the actual
-                        application translations.
+                        Language preference is saved locally.
+                        Your main language context controls the
+                        actual application translations.
                     </p>
                 </div>
             </SettingsCard>
 
             {/* Appearance */}
             <SettingsCard
-                icon={theme === 'dark' ? Moon : Sun}
+                icon={
+                    theme === 'dark'
+                        ? Moon
+                        : Sun
+                }
                 title="Appearance"
                 description="Choose how INTIZOM AI should look."
             >
@@ -506,23 +614,32 @@ export default function SettingsContent({
                         icon={Moon}
                         title="Dark"
                         description="Dark interface"
-                        selected={theme === 'dark'}
-                        onClick={() => setTheme('dark')}
+                        selected={
+                            theme === 'dark'
+                        }
+                        onClick={() =>
+                            setTheme('dark')
+                        }
                     />
 
                     <ThemeButton
                         icon={Sun}
                         title="Light"
                         description="Light interface"
-                        selected={theme === 'light'}
-                        onClick={() => setTheme('light')}
+                        selected={
+                            theme === 'light'
+                        }
+                        onClick={() =>
+                            setTheme('light')
+                        }
                     />
                 </div>
 
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs leading-5 text-slate-600">
-                        Appearance preference is saved. The current
-                        dashboard keeps its existing visual theme.
+                        Appearance preference is saved. The
+                        current dashboard keeps its existing
+                        visual theme.
                     </p>
                 </div>
             </SettingsCard>
@@ -572,15 +689,17 @@ export default function SettingsContent({
                         </h2>
 
                         <p className="mt-1 text-sm leading-6 text-[#71827c]">
-                            These actions affect your current INTIZOM
-                            AI session.
+                            These actions affect your current
+                            INTIZOM AI session.
                         </p>
                     </div>
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <button
-                        onClick={() => setShowResetModal(true)}
+                        onClick={() =>
+                            setShowResetModal(true)
+                        }
                         className="flex items-center justify-between rounded-2xl border border-red-100 bg-red-50/50 p-4 text-left transition hover:bg-red-50"
                     >
                         <div className="flex items-center gap-3">
@@ -601,7 +720,9 @@ export default function SettingsContent({
                     </button>
 
                     <button
-                        onClick={() => setShowLogoutModal(true)}
+                        onClick={() =>
+                            setShowLogoutModal(true)
+                        }
                         className="flex items-center justify-between rounded-2xl border border-[#e5ebe8] bg-[#f8faf9] p-4 text-left transition hover:bg-[#f1f5f3]"
                     >
                         <div className="flex items-center gap-3">
@@ -632,7 +753,9 @@ export default function SettingsContent({
                     confirmText="Reset data"
                     cancelText="Cancel"
                     danger
-                    onCancel={() => setShowResetModal(false)}
+                    onCancel={() =>
+                        setShowResetModal(false)
+                    }
                     onConfirm={confirmReset}
                 />
             )}
@@ -645,7 +768,9 @@ export default function SettingsContent({
                     description="You will return to the login screen. Your saved local preferences will remain on this device."
                     confirmText="Log out"
                     cancelText="Cancel"
-                    onCancel={() => setShowLogoutModal(false)}
+                    onCancel={() =>
+                        setShowLogoutModal(false)
+                    }
                     onConfirm={confirmLogout}
                 />
             )}
@@ -719,7 +844,9 @@ function Field({
             <input
                 type={type}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) =>
+                    onChange(e.target.value)
+                }
                 placeholder={placeholder}
                 className="h-12 w-full rounded-xl border border-[#dfe8e4] bg-[#fbfcfc] px-4 text-sm font-medium text-[#182522] outline-none transition placeholder:text-[#a0ada8] focus:border-emerald-400 focus:bg-white"
             />
@@ -777,7 +904,9 @@ function ChoiceButton({
                         : 'border-[#d5dfdb] bg-white'
                 }`}
             >
-                {selected && <Check className="size-3.5" />}
+                {selected && (
+                    <Check className="size-3.5" />
+                )}
             </div>
         </button>
     )
@@ -844,7 +973,9 @@ function ToggleRow({
 
             <button
                 type="button"
-                onClick={() => onChange(!checked)}
+                onClick={() =>
+                    onChange(!checked)
+                }
                 aria-label={title}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition ${
                     checked
@@ -1007,7 +1138,7 @@ function PrivacyRow({
 }
 
 /* ----------------------------- */
-/* Confirm Modal                   */
+/* Confirm Modal                  */
 /* ----------------------------- */
 
 function ConfirmModal({
