@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
     "clsx": "^2.1.1",
     "firebase": "^12.19.0",
     "framer-motion": "^13.4.6",

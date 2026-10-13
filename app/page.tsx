@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -60,18 +60,23 @@ const API_URL =
 
 const apiFetch = async (
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    timeoutMs = 45000
 ) => {
     const token =
         typeof window !== 'undefined'
             ? localStorage.getItem('token')
             : null
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
 
-    const response = await fetch(
-        `${API_URL}${endpoint}`,
-        {
-            ...options,
-            headers: {
+    try {
+        const response = await fetch(
+            `${API_URL}${endpoint}`,
+            {
+                ...options,
+                signal: controller.signal,
+                headers: {
                 ...(options.body
                     ? {
                         'Content-Type':
@@ -108,7 +113,18 @@ const apiFetch = async (
         )
     }
 
-    return data
+        return data
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('So‘rov juda uzoq davom etdi. Iltimos, qayta urinib ko‘ring.')
+        }
+        if (error instanceof TypeError) {
+            throw new Error('Tarmoq bilan bog‘lanib bo‘lmadi. Internetni tekshirib, qayta urinib ko‘ring.')
+        }
+        throw error
+    } finally {
+        window.clearTimeout(timeout)
+    }
 }
 
 type Meal = {
@@ -261,6 +277,8 @@ export default function Page() {
     const [authAge, setAuthAge] = useState('')
     const [authWeight, setAuthWeight] = useState('')
     const [authPassword, setAuthPassword] = useState('')
+    const [authLoading, setAuthLoading] = useState(false)
+    const [authError, setAuthError] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
     const [onboardingStep, setOnboardingStep] = useState(1)
@@ -713,6 +731,24 @@ export default function Page() {
             }
         )
 
+    const compressImage = async (file: File): Promise<{ base64: string; previewUrl: string }> => {
+        if (!file.type.startsWith('image/')) throw new Error('Faqat rasm faylini yuklang.')
+        const bitmap = await createImageBitmap(file)
+        const maxDimension = 1600
+        const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale))
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+        const context = canvas.getContext('2d')
+        if (!context) throw new Error('Rasmni tayyorlab bo‘lmadi.')
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+        bitmap.close()
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.78))
+        if (!blob) throw new Error('Rasmni siqib bo‘lmadi.')
+        const compressed = new File([blob], 'meal.jpg', { type: 'image/jpeg' })
+        return { base64: await fileToBase64(compressed), previewUrl: URL.createObjectURL(compressed) }
+    }
+
     /*
      * =========================================================
      * OPEN FOOD MODAL
@@ -754,11 +790,7 @@ export default function Page() {
             setScanError('')
             setScanResult(null)
 
-            const base64 =
-                await fileToBase64(file)
-
-            const previewUrl =
-                URL.createObjectURL(file)
+            const { base64, previewUrl } = await compressImage(file)
 
             setUploaded(previewUrl)
             setImageBase64(base64)
@@ -1097,8 +1129,8 @@ export default function Page() {
 
         setScanError(
             error instanceof Error
-                ? error.message
-                : 'AI tahlilida xatolik yuz berdi.'
+                ? `${error.message} Qayta urinib ko‘ring.`
+                : 'AI tahlilida xatolik yuz berdi. Qayta urinib ko‘ring.'
         )
     } finally {
         setIsAnalyzing(false)
@@ -1314,11 +1346,14 @@ export default function Page() {
             'settings',
         ].includes(activeNav)
     const finishAuth = async () => {
+        if (authLoading) return
+        setAuthError('')
+        setAuthLoading(true)
         try {
             // LOGIN
             if (authMode === 'login') {
                 if (!authName.trim() || !authPassword.trim()) {
-                    alert('Ism va parolni kiriting')
+                    setAuthError('Ism va parolni kiriting')
                     return
                 }
 
@@ -1335,7 +1370,9 @@ export default function Page() {
                     }),
                 })
 
-                localStorage.setItem('token', result.token)
+                const token = result.token ?? result.data?.token ?? result.accessToken
+            if (!token) throw new Error('Server JWT token qaytarmadi.')
+            localStorage.setItem('token', token)
                 localStorage.setItem(
                     'user',
                     JSON.stringify(result.data)
@@ -1356,13 +1393,10 @@ export default function Page() {
             }
 
             // REGISTER
-            if (
-                !authName.trim() ||
-                !authAge.trim() ||
-                !authWeight.trim() ||
-                !authPassword.trim()
-            ) {
-                alert("Iltimos, barcha kerakli maydonlarni to'ldiring")
+            const age = Number(authAge)
+            const weight = Number(authWeight)
+            if (!authName.trim() || !authPassword.trim() || !Number.isFinite(age) || !Number.isFinite(weight) || !Number.isFinite(Number(height)) || !gender) {
+                setAuthError("Iltimos, barcha maydonlarni to‘g‘ri to‘ldiring")
                 return
             }
 
@@ -1370,13 +1404,17 @@ export default function Page() {
                 method: 'POST',
                 body: JSON.stringify({
                     name: authName.trim(),
-                    age: Number(authAge),
-                    weight: Number(authWeight),
+                    age,
+                    weight,
+                    height: Number(height),
+                    gender,
                     password: authPassword,
                 }),
             })
 
-            localStorage.setItem('token', result.token)
+            const token = result.token ?? result.data?.token ?? result.accessToken
+            if (!token) throw new Error('Server JWT token qaytarmadi.')
+            localStorage.setItem('token', token)
             localStorage.setItem(
                 'user',
                 JSON.stringify(result.data)
@@ -1392,12 +1430,9 @@ export default function Page() {
             setScreen('onboarding')
         } catch (error) {
             console.error('Auth error:', error)
-
-            alert(
-                error instanceof Error
-                    ? error.message
-                    : "Server bilan bog'lanishda xatolik yuz berdi"
-            )
+            setAuthError(error instanceof Error ? error.message : 'Server bilan bog‘lanishda xatolik yuz berdi')
+        } finally {
+            setAuthLoading(false)
         }
     }
       const nextOnboarding = async () => {
@@ -1549,6 +1584,8 @@ export default function Page() {
                 showPassword={showPassword}
                 setShowPassword={setShowPassword}
                 onSubmit={finishAuth}
+                loading={authLoading}
+                error={authError}
                 copy={copy}
             />
         )
@@ -3604,6 +3641,8 @@ function AuthScreen({
     showPassword,
     setShowPassword,
     onSubmit,
+    loading,
+    error,
     copy,
 }: {
     mode: 'register' | 'login'
@@ -3633,6 +3672,8 @@ function AuthScreen({
         value: boolean
     ) => void
     onSubmit: () => void
+    loading: boolean
+    error: string
     copy: Record<
         string,
         string
@@ -3868,21 +3909,21 @@ function AuthScreen({
                             </div>
                         )}
 
+                        {error && (
+                            <p role="alert" className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+                                {error}
+                            </p>
+                        )}
+
                         {/* Submit */}
                         <button
                             type="button"
                             onClick={onSubmit}
-                            className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#2bb887] px-5 py-3.5 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#42d09e]"
+                            disabled={loading}
+                            className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#2bb887] px-5 py-3.5 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#42d09e] disabled:cursor-wait disabled:opacity-60"
                         >
-                            {mode === 'login'
-                                ? copy.signIn
-                                : copy.createOne}
-
-                            {mode === 'login' ? (
-                                <LogIn className="size-4" />
-                            ) : (
-                                <UserPlus className="size-4" />
-                            )}
+                            {loading ? 'Yuklanmoqda...' : mode === 'login' ? copy.signIn : copy.createOne}
+                            {loading ? <Loader2 className="size-4 animate-spin" /> : mode === 'login' ? <LogIn className="size-4" /> : <UserPlus className="size-4" />}
                         </button>
 
                         {/* Bottom switch */}
