@@ -55,7 +55,7 @@ import SettingsContent from '@/components/sections/SettingsContent'
 import { useLanguage } from '@/contexts/language-context'
 
 const API_URL =
-    'https://intizom-ai-backend.onrender.com'
+      'http://localhost:5001';
     
 
 const apiFetch = async (
@@ -301,10 +301,10 @@ export default function Page() {
             registerSubtitle:
                 'Siz uchun moslashtirilgan sog‘lom hayot rejasini yarating.',
             name: 'Ismingiz',
-            email: 'Email',
+            email: 'Ismingiz', // O'zgartirildi (Email o'rniga Ism)
             password: 'Parol',
             namePlaceholder: 'Ismingizni kiriting',
-            emailPlaceholder: 'you@example.com',
+            emailPlaceholder: 'Ismingizni kiriting', // O'zgartirildi
             passwordPlaceholder:
                 'Parolingizni kiriting',
             login: 'Kirish',
@@ -376,12 +376,12 @@ export default function Page() {
             registerSubtitle:
                 'Создайте персональный план здорового образа жизни.',
             name: 'Ваше имя',
-            email: 'Email',
+            email: 'Ваше имя',
             password: 'Пароль',
             namePlaceholder:
                 'Введите ваше имя',
             emailPlaceholder:
-                'you@example.com',
+                'Введите ваше имя',
             passwordPlaceholder:
                 'Введите ваш пароль',
             login: 'Войти',
@@ -467,12 +467,12 @@ export default function Page() {
             registerSubtitle:
                 'Build a personalized healthy lifestyle plan.',
             name: 'Your name',
-            email: 'Email',
+            email: 'Your name',
             password: 'Password',
             namePlaceholder:
                 'Enter your name',
             emailPlaceholder:
-                'you@example.com',
+                'Enter your name',
             passwordPlaceholder:
                 'Enter your password',
             login: 'Sign in',
@@ -1392,10 +1392,10 @@ export default function Page() {
                 return
             }
 
-            // REGISTER
+      // REGISTER
             const age = Number(authAge)
             const weight = Number(authWeight)
-            if (!authName.trim() || !authPassword.trim() || !Number.isFinite(age) || !Number.isFinite(weight) || !Number.isFinite(Number(height)) || !gender) {
+            if (!authName.trim() || !authPassword.trim() || !Number.isFinite(age) || !Number.isFinite(weight)) {
                 setAuthError("Iltimos, barcha maydonlarni to‘g‘ri to‘ldiring")
                 return
             }
@@ -1406,8 +1406,8 @@ export default function Page() {
                     name: authName.trim(),
                     age,
                     weight,
-                    height: Number(height),
-                    gender,
+                    height: 165,
+                    gender: 'female',
                     password: authPassword,
                 }),
             })
@@ -4798,4 +4798,4 @@ function AdminMember({
             </span>
         </div>
     )
-} 
+}
