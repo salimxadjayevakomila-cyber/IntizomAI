@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import { useMemo, useState } from 'react'
 import {
@@ -527,7 +527,7 @@ export default function GymFinder() {
 
   return (
     <section className="min-h-[calc(100vh-73px)] w-full bg-white text-slate-900">
-      <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-[1180px] px-4 py-8   ">
         {/* HEADER */}
         <div className="mb-8">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-bold tracking-wider text-emerald-700">
@@ -535,11 +535,11 @@ export default function GymFinder() {
             {t.badge}
           </div>
 
-          <h1 className="max-w-2xl text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+          <h1 className="max-w-2xl text-3xl font-black tracking-tight text-slate-950  ">
             {t.title}
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 ">
             {t.subtitle}
           </p>
         </div>
@@ -584,7 +584,7 @@ export default function GymFinder() {
         {/* TITLE */}
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-extrabold text-slate-950 sm:text-2xl">
+            <h2 className="text-xl font-extrabold text-slate-950 ">
               {t.recommended}
             </h2>
             <p className="mt-1 text-sm text-slate-400">
@@ -595,7 +595,7 @@ export default function GymFinder() {
 
         {/* CARDS */}
         {filteredGyms.length > 0 ? (
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 ">
             {filteredGyms.map((gym) => {
               const isExpanded = expanded === gym.id
               const isFavorite = favorites.includes(gym.id)

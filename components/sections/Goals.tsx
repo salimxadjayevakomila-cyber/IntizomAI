@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import { useEffect, useState } from 'react'
 import {
@@ -547,14 +547,14 @@ export default function GoalsSection() {
   return (
     <div className="mx-auto max-w-[1080px]">
       {/* Header */}
-      <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <div className="mb-7 flex flex-col justify-between gap-4  ">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
             <Target className="size-3.5" />
             {t('goals.badge')}
           </div>
 
-          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white ">
             {t('goals.title')}
           </h1>
 
@@ -607,8 +607,8 @@ export default function GoalsSection() {
       </div>
 
       {/* Target Weight Tracker */}
-      <section className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <section className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
+        <div className="flex flex-col gap-6   ">
           <div className="flex items-center gap-4">
             <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-300">
               <Scale className="size-6" />
@@ -714,7 +714,7 @@ export default function GoalsSection() {
 
         {/* Editable weight fields */}
         {editing && (
-          <div className="mt-6 grid gap-4 border-t border-slate-800 pt-5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 border-t border-slate-800 pt-5 ">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">
                 {t('goals.currentWeightLabel')}
@@ -763,7 +763,7 @@ export default function GoalsSection() {
       </section>
 
       {/* Daily Macro Targets */}
-      <section className="mt-5 rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
+      <section className="mt-5 rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex size-12 items-center justify-center rounded-xl bg-sky-400/15 text-sky-300">
@@ -783,7 +783,7 @@ export default function GoalsSection() {
 
           <button
             type="button"
-            className="hidden items-center gap-1 text-xs font-semibold text-slate-400 sm:flex"
+            className="hidden items-center gap-1 text-xs font-semibold text-slate-400 "
           >
             {t('goals.daily')}
             <ChevronDown className="size-3" />
@@ -791,7 +791,7 @@ export default function GoalsSection() {
         </div>
 
         {/* Calorie display / edit */}
-        <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/50 p-5   ">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-400/15 text-emerald-300">
               <Zap className="size-5" />
@@ -935,9 +935,9 @@ export default function GoalsSection() {
       </section>
 
       {/* Daily Activity Goals */}
-      <section className="mt-5 grid gap-5 sm:grid-cols-2">
+      <section className="mt-5 grid gap-5 ">
         {/* Steps */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
+        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="flex size-11 items-center justify-center rounded-xl bg-violet-400/15 text-violet-300">
@@ -1016,7 +1016,7 @@ export default function GoalsSection() {
         </div>
 
         {/* Water */}
-        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
+        <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="flex size-11 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-300">
@@ -1088,7 +1088,7 @@ export default function GoalsSection() {
       </section>
 
       {/* Summary footer */}
-      <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-emerald-900/40 bg-emerald-400/[0.04] px-5 py-4 text-sm sm:flex-row">
+      <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl border border-emerald-900/40 bg-emerald-400/[0.04] px-5 py-4 text-sm ">
         <p className="text-slate-400">
           <Sparkles className="mr-1.5 inline size-4 text-emerald-400" />
           {t('goals.footerNote')}

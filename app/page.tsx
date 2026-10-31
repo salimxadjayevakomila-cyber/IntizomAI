@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -53,6 +53,7 @@ import Insights from '@/components/sections/Insights'
 import Goals from '@/components/sections/Goals'
 import SettingsContent from '@/components/sections/SettingsContent'
 import { useLanguage } from '@/contexts/language-context'
+
 
 const API_URL =
       'http://localhost:5001';
@@ -163,26 +164,26 @@ const mapMealFromApi = (item: any): Meal => ({
 
 const fastingStepKeys = [
     {
-        text: 'dashboard.finishMeal',
-        label: 'dashboard.finishMealLabel',
+        text: 'dashboard.fasting.finishMeal',
+        label: 'dashboard.fasting.windDown',
         icon: Check,
         sticker: 'bg-[#e8f7f0] text-[#4ba48d]',
     },
     {
-        text: 'dashboard.drinkWater',
-        label: 'dashboard.drinkWaterLabel',
+        text: 'dashboard.fasting.drinkWater',
+        label: 'dashboard.fasting.stayHydrated',
         icon: Droplets,
         sticker: 'bg-[#e8f3fb] text-[#5b9fc4]',
     },
     {
-        text: 'dashboard.breakFast',
-        label: 'dashboard.breakFastLabel',
+        text: 'dashboard.fasting.breakFast',
+        label: 'dashboard.fasting.fuelGently',
         icon: Utensils,
         sticker: 'bg-[#fff3df] text-[#d59a45]',
     },
     {
-        text: 'dashboard.caffeine',
-        label: 'dashboard.caffeineLabel',
+        text: 'dashboard.fasting.caffeine',
+        label: 'dashboard.fasting.keepSimple',
         icon: Coffee,
         sticker: 'bg-[#f4eafa] text-[#9b6bc4]',
     },
@@ -198,7 +199,6 @@ type NavKey =
     | 'aichat'
     | 'recipes'
     | 'aitrainer'
-    | 'admin'
     | 'settings'
 
 
@@ -1137,6 +1137,613 @@ export default function Page() {
     }
 }
 
+    const calorieProgress = dailyCalories > 0
+        ? Math.max(
+            0,
+            Math.min(
+                (totals.calories / dailyCalories) * 100,
+                100
+            )
+        )
+        : 0
+
+    const weekdayLabels = [
+        t('admin.days.sun'),
+        t('admin.days.mon'),
+        t('admin.days.tue'),
+        t('admin.days.wed'),
+        t('admin.days.thu'),
+        t('admin.days.fri'),
+        t('admin.days.sat'),
+    ]
+    const currentDate = new Date()
+    const todayDateLabel = `${weekdayLabels[currentDate.getUTCDay()]} · ${String(currentDate.getUTCDate()).padStart(2, '0')}.${String(currentDate.getUTCMonth() + 1).padStart(2, '0')}.${currentDate.getUTCFullYear()}`
+
+    const renderToday = () => (
+        <div className="flex flex-col gap-4">
+            <header className="flex items-start justify-between gap-4">
+                <div>
+                    <p className="text-xs font-medium text-zinc-500">
+                        {todayDateLabel}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-emerald-300">
+                        {t('dashboard.salom')}, {profileName}
+                    </p>
+                    <h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white">
+                        {t('dashboard.today')}
+                    </h1>
+                    <p className="mt-1 text-sm leading-5 text-zinc-400">
+                        {t('dashboard.nutritionGoalsText')}
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={openMealModal}
+                    aria-label={t('dashboard.logMeal')}
+                    className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400 text-emerald-950 transition hover:bg-emerald-300"
+                >
+                    <Plus className="size-5" aria-hidden="true" />
+                </button>
+            </header>
+
+            <section className="rounded-[28px] border border-emerald-900/50 bg-[#0d1a12] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium text-zinc-400">
+                            {t('dashboard.todaysCalories')}
+                        </p>
+                        <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-white">
+                            {totals.calories.toLocaleString(language)}
+                            <span className="ml-1.5 text-sm font-medium tracking-normal text-zinc-400">
+                                kcal
+                            </span>
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                            {t('dashboard.dailyGoal')} · {dailyCalories.toLocaleString(language)} kcal
+                        </p>
+                    </div>
+
+                    <div
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(calorieProgress)}
+                        aria-valuetext={`${totals.calories.toLocaleString(language)} of ${dailyCalories.toLocaleString(language)} kcal`}
+                        aria-label={t('dashboard.todaysCalories')}
+                        className="grid size-32 shrink-0 place-items-center rounded-full p-2"
+                        style={{
+                            background: `conic-gradient(from -90deg, #34d399 ${calorieProgress}%, #20352a ${calorieProgress}% 100%)`,
+                        }}
+                    >
+                        <div className="flex size-full flex-col items-center justify-center rounded-full bg-[#0d1a12] text-center">
+                            <span className="text-2xl font-semibold tracking-tight text-white">
+                                {Math.round(calorieProgress)}%
+                            </span>
+                            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                                {t('dashboard.dailyGoal')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-3 gap-2 border-t border-white/10 pt-4">
+                    {macroData.map((macro, index) => (
+                        <div key={macro.label} className="min-w-0 rounded-xl bg-white/[0.035] p-2.5">
+                            <p className="truncate text-[10px] font-medium text-zinc-400">
+                                {macro.label}
+                            </p>
+                            <p className="mt-1 truncate text-sm font-semibold text-white">
+                                {macro.value}
+                                <span className="ml-0.5 text-[10px] font-normal text-zinc-500">
+                                    / {macro.goal}g
+                                </span>
+                            </p>
+                            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                                <div
+                                    className={`h-full rounded-full ${index === 0 ? 'bg-emerald-400' : index === 1 ? 'bg-violet-400' : 'bg-amber-400'}`}
+                                    style={{
+                                        width: `${Math.min((macro.value / Math.max(macro.goal, 1)) * 100, 100)}%`,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <section className="grid grid-cols-2 gap-3" aria-label={t('dashboard.dailyGoal')}>
+                <button
+                    type="button"
+                    onClick={() => setActiveNav('steps')}
+                    className="rounded-2xl border border-white/10 bg-[#111d16] p-4 text-left transition hover:border-emerald-400/30 hover:bg-[#15251b]"
+                >
+                    <span className="flex items-center justify-between">
+                        <span className="flex size-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300">
+                            <Footprints className="size-5" aria-hidden="true" />
+                        </span>
+                        <ArrowRight className="size-4 text-zinc-500" aria-hidden="true" />
+                    </span>
+                    <span className="mt-3 block text-sm font-semibold text-white">
+                        {t('dashboard.steps')}
+                    </span>
+                    <span className="mt-1 block text-xl font-semibold tracking-tight text-white">
+                        {(10000).toLocaleString(language)}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-zinc-500">
+                        {t('dashboard.dailyGoal')}
+                    </span>
+                </button>
+
+                <article className="rounded-2xl border border-white/10 bg-[#111d16] p-4">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-blue-400/10 text-blue-300">
+                        <Droplets className="size-5" aria-hidden="true" />
+                    </span>
+                    <p className="mt-3 text-sm font-semibold text-white">
+                        {copy.dailyWater}
+                    </p>
+                    <p className="mt-1 text-xl font-semibold tracking-tight text-white">
+                        {dailyWater.toLocaleString(language)}
+                        <span className="ml-1 text-xs font-medium text-zinc-400">
+                            {copy.liters}
+                        </span>
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-zinc-500">
+                        {t('dashboard.dailyGoal')}
+                    </p>
+                </article>
+            </section>
+
+            <section className="rounded-[24px] border border-emerald-400/20 bg-gradient-to-br from-[#10271c] to-[#0e1913] p-4">
+                <div className="flex items-start gap-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300">
+                        <Camera className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-300">
+                            {t('dashboard.scanWithCamera')}
+                        </p>
+                        <h2 className="mt-1 text-lg font-semibold text-white">
+                            {t('dashboard.cameraIdentify')}
+                        </h2>
+                        <p className="mt-1 text-sm leading-5 text-zinc-400">
+                            {t('dashboard.cameraQuestion')}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        onClick={openCamera}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-3 py-3 text-xs font-bold text-emerald-950 transition hover:bg-emerald-300"
+                    >
+                        <Camera className="size-4" aria-hidden="true" />
+                        {t('dashboard.takePhoto')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => inputRef.current?.click()}
+                        onDrop={(event) => {
+                            event.preventDefault()
+                            handleFile(event.dataTransfer.files[0])
+                        }}
+                        onDragOver={(event) => event.preventDefault()}
+                        className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.08]"
+                    >
+                        <Plus className="size-4" aria-hidden="true" />
+                        {t('dashboard.uploadPhoto')}
+                    </button>
+                </div>
+
+                {uploaded && (
+                    <div className="relative mt-3 overflow-hidden rounded-xl border border-white/10">
+                        <img
+                            src={uploaded}
+                            alt={t('dashboard.uploadedMealPreview')}
+                            className="h-28 w-full object-cover"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setUploaded(null)
+                                setImageBase64(null)
+                            }}
+                            aria-label={t('dashboard.removeUploadedImage')}
+                            className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-full bg-black/70 text-white"
+                        >
+                            <X className="size-4" aria-hidden="true" />
+                        </button>
+                    </div>
+                )}
+
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(event) => {
+                        handleFile(event.target.files?.[0])
+                        event.currentTarget.value = ''
+                    }}
+                />
+            </section>
+
+            <section className="rounded-2xl border border-white/10 bg-[#111b15] p-4">
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-300">
+                            {t('dashboard.fastingPlan')}
+                        </p>
+                        <h2 className="mt-1 text-lg font-semibold text-white">
+                            {t('dashboard.stepByStepFasting')}
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setFasting((value) => !value)}
+                        className={`shrink-0 px-3 py-2 text-xs font-semibold ${fasting ? 'bg-emerald-400 text-emerald-950' : 'border border-white/10 bg-white/[0.04] text-zinc-200'}`}
+                    >
+                        {fasting ? t('dashboard.fastingActive') : t('dashboard.startFast')}
+                    </button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                    {fastingStepKeys.map((step, index) => {
+                        const StepIcon = step.icon
+                        const isComplete = routineSteps[index]
+
+                        return (
+                            <button
+                                key={step.text}
+                                type="button"
+                                onClick={() => setRoutineSteps((current) => current.map((done, itemIndex) => itemIndex === index ? !done : done))}
+                                className={`flex min-w-0 items-center gap-2 rounded-xl border border-white/10 p-2.5 text-left transition ${isComplete ? 'bg-emerald-400/10' : 'bg-white/[0.025]'}`}
+                            >
+                                <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${step.sticker}`}>
+                                    {isComplete ? <Check className="size-4" aria-hidden="true" /> : <StepIcon className="size-4" aria-hidden="true" />}
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-xs font-semibold text-white">
+                                        {t(step.text)}
+                                    </span>
+                                    <span className="mt-0.5 block truncate text-[10px] text-zinc-500">
+                                        {t(step.label)}
+                                    </span>
+                                </span>
+                            </button>
+                        )
+                    })}
+                </div>
+            </section>
+
+            <button
+                type="button"
+                onClick={() => setActiveNav('meals')}
+                className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#111b15] p-4 text-left transition hover:border-emerald-400/30"
+            >
+                <span className="flex items-center gap-3">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
+                        <Utensils className="size-5" aria-hidden="true" />
+                    </span>
+                    <span>
+                        <span className="block text-sm font-semibold text-white">
+                            {t('dashboard.myMeals')}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-zinc-400">
+                            {meals.length} {t('dashboard.mealsLoggedText')}
+                        </span>
+                    </span>
+                </span>
+                <ArrowRight className="size-4 text-zinc-500" aria-hidden="true" />
+            </button>
+        </div>
+    )
+
+    const renderDiary = () => {
+        const today = new Date()
+        const todayIndex = (today.getUTCDay() + 6) % 7
+        const weekDays = Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(
+                Date.UTC(
+                    today.getUTCFullYear(),
+                    today.getUTCMonth(),
+                    today.getUTCDate() + index - todayIndex
+                )
+            )
+
+            return {
+                key: date.toISOString().slice(0, 10),
+                label: weekdayLabels[(index + 1) % 7],
+                number: date.getUTCDate(),
+                isToday: index === todayIndex,
+            }
+        })
+
+        const mealCategories = [
+            {
+                label: t('dashboard.mealType.breakfast'),
+                icon: Coffee,
+                tone: 'bg-amber-400/10 text-amber-300',
+            },
+            {
+                label: t('dashboard.mealType.lunch'),
+                icon: Utensils,
+                tone: 'bg-emerald-400/10 text-emerald-300',
+            },
+            {
+                label: t('settings.dinner'),
+                icon: Flame,
+                tone: 'bg-violet-400/10 text-violet-300',
+            },
+            {
+                label: t('dashboard.mealType.snack'),
+                icon: Sparkles,
+                tone: 'bg-pink-400/10 text-pink-300',
+            },
+        ]
+
+        return (
+            <div className="flex flex-col gap-4">
+                <header className="flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                            {t('dashboard.today')}
+                        </p>
+                        <h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white">
+                            {t('dashboard.myMeals')}
+                        </h1>
+                        <p className="mt-1 text-sm text-zinc-400">
+                            {t('dashboard.visualLog')}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={openMealModal}
+                        aria-label={t('dashboard.logMeal')}
+                        className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400 text-emerald-950"
+                    >
+                        <Plus className="size-5" aria-hidden="true" />
+                    </button>
+                </header>
+
+                <section className="rounded-2xl border border-white/10 bg-[#111b15] p-2" aria-label={t('dashboard.today')}>
+                    <div className="grid grid-cols-7 gap-1">
+                        {weekDays.map((day) => (
+                            <div
+                                key={day.key}
+                                aria-current={day.isToday ? 'date' : undefined}
+                                className={`flex min-w-0 flex-col items-center rounded-xl px-1 py-2.5 ${day.isToday ? 'bg-emerald-400 text-emerald-950' : 'text-zinc-500'}`}
+                            >
+                                <span className="max-w-full truncate text-[10px] font-medium uppercase">
+                                    {day.label}
+                                </span>
+                                <span className="mt-1 text-sm font-semibold">
+                                    {day.number}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="rounded-[24px] border border-emerald-900/50 bg-[#0d1a12] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-medium text-zinc-400">
+                                {t('dashboard.todaysCalories')}
+                            </p>
+                            <p className="mt-1 text-3xl font-semibold tracking-tight text-white">
+                                {totals.calories.toLocaleString(language)}
+                                <span className="ml-1 text-sm font-medium text-zinc-400">
+                                    kcal
+                                </span>
+                            </p>
+                            <p className="mt-1 text-xs text-zinc-500">
+                                {t('dashboard.dailyGoal')} · {dailyCalories.toLocaleString(language)} kcal
+                            </p>
+                        </div>
+                        <div
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(calorieProgress)}
+                            aria-valuetext={`${totals.calories.toLocaleString(language)} of ${dailyCalories.toLocaleString(language)} kcal`}
+                            aria-label={t('dashboard.todaysCalories')}
+                            className="grid size-20 shrink-0 place-items-center rounded-full p-1.5"
+                            style={{
+                                background: `conic-gradient(from -90deg, #34d399 ${calorieProgress}%, #20352a ${calorieProgress}% 100%)`,
+                            }}
+                        >
+                            <div className="flex size-full items-center justify-center rounded-full bg-[#0d1a12] text-sm font-semibold text-white">
+                                {Math.round(calorieProgress)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-3">
+                        {macroData.map((macro, index) => (
+                            <div key={macro.label} className="min-w-0">
+                                <p className="truncate text-[10px] text-zinc-500">{macro.label}</p>
+                                <p className="mt-1 truncate text-xs font-semibold text-white">
+                                    {macro.value}
+                                    <span className="font-normal text-zinc-500"> / {macro.goal}g</span>
+                                </p>
+                                <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+                                    <div
+                                        className={`h-full rounded-full ${index === 0 ? 'bg-emerald-400' : index === 1 ? 'bg-violet-400' : 'bg-amber-400'}`}
+                                        style={{
+                                            width: `${Math.min((macro.value / Math.max(macro.goal, 1)) * 100, 100)}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="rounded-2xl border border-white/10 bg-[#111b15] p-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-base font-semibold text-white">
+                            {t('dashboard.myMeals')}
+                        </h2>
+                        <span className="text-xs text-zinc-500">
+                            {meals.length} {t('dashboard.mealsLoggedText')}
+                        </span>
+                    </div>
+                    <div className="mt-3 flex flex-col gap-2">
+                        {mealCategories.map((category) => {
+                            const CategoryIcon = category.icon
+
+                            return (
+                                <div
+                                    key={category.label}
+                                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-3"
+                                >
+                                    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${category.tone}`}>
+                                        <CategoryIcon className="size-4" aria-hidden="true" />
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">
+                                        {category.label}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={openMealModal}
+                                        aria-label={`${t('dashboard.logMeal')}: ${category.label}`}
+                                        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-emerald-300 transition hover:bg-emerald-400/10"
+                                    >
+                                        <Plus className="size-4" aria-hidden="true" />
+                                    </button>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </section>
+
+                <section className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-base font-semibold text-white">
+                            {t('dashboard.fuelYourDay')}
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={openMealModal}
+                            className="text-xs font-semibold text-emerald-300"
+                        >
+                            {t('dashboard.logMeal')}
+                        </button>
+                    </div>
+
+                    {meals.length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                            {meals.map((meal, index) => (
+                                <article
+                                    key={meal._id ?? `${meal.name}-${index}`}
+                                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#111b15] p-3"
+                                >
+                                    {meal.image ? (
+                                        <img
+                                            src={meal.image}
+                                            alt={meal.name}
+                                            className="size-12 shrink-0 rounded-xl object-cover"
+                                        />
+                                    ) : (
+                                        <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${meal.color}`}>
+                                            <Utensils className="size-5" aria-hidden="true" />
+                                        </span>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-semibold text-white">
+                                            {meal.name}
+                                        </p>
+                                        <p className="mt-1 truncate text-xs text-zinc-500">
+                                            {meal.type} · {meal.time || t('dashboard.today')}
+                                        </p>
+                                    </div>
+                                    <div className="shrink-0 text-right">
+                                        <p className="text-sm font-semibold text-white">
+                                            {meal.calories.toLocaleString(language)}
+                                        </p>
+                                        <p className="text-[10px] text-zinc-500">kcal</p>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="rounded-2xl border border-dashed border-white/10 bg-[#111b15] px-4 py-6 text-center">
+                            <Utensils className="mx-auto size-5 text-zinc-500" aria-hidden="true" />
+                            <p className="mt-2 text-sm font-medium text-zinc-300">
+                                {t('dashboard.visualLog')}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={openMealModal}
+                                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-xs font-bold text-emerald-950"
+                            >
+                                <Plus className="size-4" aria-hidden="true" />
+                                {t('dashboard.logMeal')}
+                            </button>
+                        </div>
+                    )}
+                </section>
+
+                <div className="flex items-center justify-between rounded-2xl bg-[#101b15] px-4 py-3 text-xs text-zinc-400">
+                    <span>
+                        {t('dashboard.youHaveLogged')} <strong className="text-emerald-300">{meals.length} {t('dashboard.mealsLoggedText')}</strong> · {totals.calories.toLocaleString(language)} {t('dashboard.calories')}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={openMealModal}
+                        aria-label={t('dashboard.addAnotherMeal')}
+                        className="ml-3 flex size-10 shrink-0 items-center justify-center rounded-xl text-emerald-300"
+                    >
+                        <Plus className="size-4" aria-hidden="true" />
+                    </button>
+                </div>
+
+                <div className="sticky bottom-24 z-10 mt-1 flex justify-end">
+                    <button
+                        type="button"
+                        onClick={openMealModal}
+                        className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-5 py-3 text-sm font-bold text-emerald-950 shadow-[0_12px_32px_rgba(16,185,129,0.25)]"
+                    >
+                        <Plus className="size-4" aria-hidden="true" />
+                        {t('dashboard.logMeal')}
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const mobileNavItems: {
+        key: NavKey
+        icon: typeof LayoutDashboard
+        label: string
+    }[] = [
+        {
+            key: 'overview',
+            icon: LayoutDashboard,
+            label: t('dashboard.today'),
+        },
+        {
+            key: 'meals',
+            icon: Utensils,
+            label: language === 'uz' ? 'Kundalik' : language === 'ru' ? 'Дневник' : 'Diary',
+        },
+        {
+            key: 'aitrainer',
+            icon: Sparkles,
+            label: t('dashboard.aiTrainer'),
+        },
+        {
+            key: 'insights',
+            icon: BarChart3,
+            label: t('dashboard.insights'),
+        },
+        {
+            key: 'settings',
+            icon: User,
+            label: language === 'uz' ? 'Profil' : language === 'ru' ? 'Профиль' : 'Profile',
+        },
+    ]
+
     const navItems: {
         key: NavKey
         icon: typeof LayoutDashboard
@@ -1198,6 +1805,9 @@ export default function Page() {
             switch (
             activeNav
             ) {
+                case 'meals':
+                    return renderDiary()
+
                 case 'goals':
                     return <Goals />
 
@@ -1337,6 +1947,7 @@ export default function Page() {
 
     const isNewSection =
         [
+            'meals',
             'goals',
             'insights',
             'steps',
@@ -1692,10 +2303,10 @@ export default function Page() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f7f9f8] text-[#182522]">
+        <div className="intizom-app intizom-mobile-shell relative mx-auto min-h-screen w-full max-w-md overflow-x-hidden bg-zinc-950 text-zinc-50">
             {mobileOpen && (
                 <div
-                    className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+                    className="intizom-mobile-overlay fixed inset-0 z-20 bg-black/60"
                     onClick={() =>
                         setMobileOpen(
                             false
@@ -1706,7 +2317,7 @@ export default function Page() {
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-30 flex w-[250px] flex-col overflow-y-auto border-r border-[#e5ece9] bg-white px-5 py-6 transition-transform lg:translate-x-0 ${mobileOpen
+                className={`intizom-mobile-drawer fixed inset-y-0 left-0 z-30 flex w-full max-w-md flex-col overflow-y-auto border-r border-white/10 bg-zinc-950/95 px-5 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-xl transition-transform ${mobileOpen
                     ? 'translate-x-0'
                     : '-translate-x-full'
                     }`}
@@ -1728,7 +2339,7 @@ export default function Page() {
                     </div>
 
                     <button
-                        className="lg:hidden"
+                        className="flex size-11 items-center justify-center rounded-2xl text-zinc-300 transition hover:bg-white/10"
                         onClick={() =>
                             setMobileOpen(
                                 false
@@ -1885,10 +2496,10 @@ export default function Page() {
                 </div>
             </aside>
 
-            <main className="min-w-0 bg-white lg:ml-[250px]">
-                <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#e5ece9] bg-white/90 px-5 py-4 backdrop-blur-md sm:px-8 lg:px-12">
+            <main className="intizom-dashboard-main min-w-0 bg-zinc-950">
+                <header className="intizom-mobile-topbar z-20 flex items-center justify-between border-b border-white/10 bg-zinc-950/90 px-4 py-3 backdrop-blur-xl">
                     <button
-                        className="lg:hidden"
+                        className="flex size-11 items-center justify-center rounded-2xl text-zinc-300 transition hover:bg-white/10"
                         onClick={() =>
                             setMobileOpen(
                                 true
@@ -1901,7 +2512,7 @@ export default function Page() {
                         <Menu className="size-5" />
                     </button>
 
-                    <div className="hidden items-center gap-2 text-sm text-[#81908b] sm:flex">
+                    <div className="hidden items-center gap-2 text-sm text-[#81908b] ">
                         <span>
                             {t(
                                 'dashboard.headerDate'
@@ -1913,7 +2524,7 @@ export default function Page() {
 
                     <div className="ml-auto flex items-center gap-3">
                         <button
-                            className="hidden size-9 items-center justify-center rounded-full border border-[#e5ece9] text-[#667570] sm:flex"
+                            className="hidden size-9 items-center justify-center rounded-full border border-[#e5ece9] text-[#667570] "
                             aria-label={t(
                                 'dashboard.search'
                             )}
@@ -1945,8 +2556,8 @@ export default function Page() {
                 </header>
 
                 {adminOpen && (
-                    <div className="fixed inset-0 z-40 overflow-y-auto bg-[#0b1215] text-slate-100 lg:left-[250px]">
-                        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+                    <div className="intizom-mobile-panel fixed inset-0 z-40 overflow-y-auto bg-zinc-950 text-zinc-100">
+                        <div className="mx-auto w-full max-w-md px-4 py-5   ">
                             <div className="mb-8 flex items-start justify-between gap-4">
                                 <div>
                                     <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
@@ -1972,7 +2583,7 @@ export default function Page() {
                                         )}
                                     </p>
 
-                                    <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
+                                    <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white ">
                                         {t(
                                             'admin.title'
                                         )}
@@ -2000,7 +2611,7 @@ export default function Page() {
                                 </button>
                             </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <div className="grid gap-4  ">
                                 <AdminStat
                                     label={t(
                                         'admin.totalActiveUsers'
@@ -2045,8 +2656,8 @@ export default function Page() {
                                 />
                             </div>
 
-                            <div className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_1fr]">
-                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-7">
+                            <div className="mt-5 grid gap-5 ">
+                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <h2 className="text-lg font-semibold text-white">
@@ -2113,7 +2724,7 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-7">
+                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 ">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h2 className="text-lg font-semibold text-white">
@@ -2189,7 +2800,7 @@ export default function Page() {
                                 </div>
                             </div>
 
-                            <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-7">
+                            <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 ">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="text-lg font-semibold text-white">
@@ -2233,20 +2844,22 @@ export default function Page() {
                 )}
 
                 <div
-                    className={`mx-auto max-w-[1320px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10 ${activeNav ===
+                    className={`mx-auto w-full max-w-md px-4 pb-32 pt-5 ${activeNav ===
                         'recipes' ||
                         activeNav === 'gyms'
-                        ? 'min-h-[calc(100vh-73px)] bg-white text-slate-900'
+                        ? 'min-h-[100svh] bg-zinc-950 text-zinc-50'
                         : isNewSection
-                            ? 'min-h-[calc(100vh-73px)] bg-[#0b1215] text-white'
+                            ? 'min-h-[100svh] bg-zinc-950 text-zinc-50'
                             : ''
                         }`}
                 >
-                    {isNewSection ? (
+                    {activeNav === 'overview' ? (
+                        renderToday()
+                    ) : isNewSection ? (
                         renderSection()
                     ) : (
                         <>
-                            <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+                            <div className="mb-8 flex flex-col justify-between gap-5  ">
                                 <div>
                                     <p className="mb-2 text-sm font-medium text-[#57a993]">
                                         {t(
@@ -2259,7 +2872,7 @@ export default function Page() {
                                         !
                                     </p>
 
-                                    <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#19352f] sm:text-[38px]">
+                                    <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#19352f] ">
                                         {t(
                                             'dashboard.dailyOverview'
                                         )}
@@ -2276,7 +2889,7 @@ export default function Page() {
                                     onClick={
                                         openMealModal
                                     }
-                                    className="flex w-fit items-center gap-2 rounded-xl bg-[#193e35] px-4 py-2.5 text-sm font-semibold text-white"
+                                    className="flex min-h-11 w-fit items-center gap-2 rounded-2xl bg-[#10b981] px-4 py-2.5 text-sm font-semibold text-[#062017]"
                                 >
                                     <Plus className="size-4" />
                                     {t(
@@ -2285,8 +2898,8 @@ export default function Page() {
                                 </button>
                             </div>
 
-                            <section className="grid gap-5 xl:grid-cols-[1.45fr_1fr]">
-                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 shadow-[0_8px_30px_rgba(45,83,70,0.04)] sm:p-7">
+                            <section className="grid gap-5 ">
+                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 shadow-[0_8px_30px_rgba(45,83,70,0.04)] ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-[#768781]">
@@ -2391,7 +3004,7 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl bg-[#193e35] p-6 text-white sm:p-7">
+                                <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5 text-white ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-[#a7cdc1]">
@@ -2475,8 +3088,8 @@ export default function Page() {
                                 </div>
                             </section>
 
-                            <section className="mt-5 grid gap-5 xl:grid-cols-[1fr_1.45fr]">
-                                <div className="rounded-2xl border border-[#a8dfcc] bg-[#effbf6] p-6 sm:p-7">
+                            <section className="mt-5 grid gap-5 ">
+                                <div className="rounded-2xl border border-[#a8dfcc] bg-[#effbf6] p-6 ">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
                                             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[#d9f7ea] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#238b68]">
@@ -2517,7 +3130,7 @@ export default function Page() {
                                         onClick={
                                             openCamera
                                         }
-                                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2bb887] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#239e74]"
+                                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#10b981] px-4 py-3 text-sm font-bold text-[#062017] transition hover:bg-[#059669]"
                                     >
                                         <Camera className="size-4" />
                                         {t(
@@ -2617,7 +3230,7 @@ export default function Page() {
                                     />
                                 </div>
 
-                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 sm:p-7">
+                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <h2 className="text-lg font-semibold text-[#23423a]">
@@ -2695,8 +3308,8 @@ export default function Page() {
                                 </div>
                             </section>
 
-                            <section className="mt-8 grid gap-5 xl:grid-cols-[1.1fr_1fr]">
-                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 sm:p-7">
+                            <section className="mt-8 grid gap-5 ">
+                                <div className="rounded-2xl border border-[#e4ece8] bg-white p-6 ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-[#57a993]">
@@ -2746,7 +3359,7 @@ export default function Page() {
                                                 )
                                             }
                                             className={`rounded-lg px-3 py-2 text-xs font-semibold ${fasting
-                                                ? 'bg-[#193e35] text-white'
+                                                ? 'bg-[#10b981] text-[#062017]'
                                                 : 'bg-white text-[#398b73] ring-1 ring-[#cfe6dc]'
                                                 }`}
                                         >
@@ -2854,7 +3467,7 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl bg-[#193e35] p-6 text-white sm:p-7">
+                                <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5 text-white ">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-[#a7cdc1]">
@@ -2944,8 +3557,8 @@ export default function Page() {
                                 </div>
                             </section>
 
-                            <section className="mt-8 rounded-[28px] border border-[#e2ece7] bg-white p-5 sm:p-7">
-                                <div className="flex flex-col gap-5 border-b border-[#edf1ef] pb-6 sm:flex-row sm:items-end sm:justify-between">
+                            <section className="mt-8 rounded-[28px] border border-[#e2ece7] bg-white p-5 ">
+                                <div className="flex flex-col gap-5 border-b border-[#edf1ef] pb-6   ">
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className="flex size-8 items-center justify-center rounded-lg bg-[#e7f7f0] text-[#4ba48d]">
@@ -2985,7 +3598,7 @@ export default function Page() {
                                     </button>
                                 </div>
 
-                                <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                <div className="mt-6 grid gap-4  ">
                                     {meals.map(
                                         (
                                             meal,
@@ -3087,7 +3700,7 @@ export default function Page() {
                                     )}
                                 </div>
 
-                                <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl bg-[#f3faf7] px-4 py-3.5 sm:flex-row">
+                                <div className="mt-5 flex flex-col items-center justify-between gap-3 rounded-2xl bg-[#f3faf7] px-4 py-3.5 ">
                                     <p className="text-xs text-[#6f8880]">
                                         {t(
                                             'dashboard.youHaveLogged'
@@ -3123,17 +3736,46 @@ export default function Page() {
                     )}
                 </div>
 
+                <nav
+                    aria-label="Primary navigation"
+                    className="fixed left-1/2 z-10 w-[calc(100%-1.5rem)] max-w-[26rem] -translate-x-1/2 rounded-[22px] border border-white/10 bg-[#0d1610]/95 p-1.5 shadow-2xl backdrop-blur-xl"
+                    style={{ bottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+                >
+                    <ul className="grid grid-cols-5 gap-1">
+                        {mobileNavItems.map((item) => {
+                            const ItemIcon = item.icon
+                            const isActive = activeNav === item.key
+
+                            return (
+                                <li key={item.key}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveNav(item.key)}
+                                        aria-pressed={isActive}
+                                        className={`flex w-full flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition ${isActive ? 'bg-emerald-400/12 text-emerald-300' : 'text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200'}`}
+                                    >
+                                        <ItemIcon className="size-4" aria-hidden="true" />
+                                        <span className="max-w-full truncate text-[9px] font-medium leading-none">
+                                            {item.label}
+                                        </span>
+                                    </button>
+                                </li>
+                            )
+                        })}
+                    </ul>
+                </nav>
+
                 {/* =====================================================
     AI FOOD SCANNER MODAL
 ===================================================== */}
 
                 {(cameraOpen || modalOpen) && (
                     <div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-[#102e27]/75 px-4 py-6 backdrop-blur-md"
+                        className="intizom-mobile-panel fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/75 px-4 py-6 backdrop-blur-md"
                         role="dialog"
                         aria-modal="true"
                     >
-                        <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[28px] border border-white/20 bg-[#173d34] p-5 text-white shadow-2xl sm:p-7">
+                        <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[28px] border border-white/20 bg-[#173d34] p-5 text-white shadow-2xl ">
 
                             {/* HEADER */}
                             <div className="flex items-start justify-between gap-4">
@@ -3218,10 +3860,10 @@ export default function Page() {
                                             </div>
 
                                             {/* CALORIES */}
-                                            <div className="mt-5 rounded-2xl bg-[#193e35] p-4">
+                                            <div className="mt-5 rounded-2xl border border-white/10 bg-zinc-900 p-4">
                                                 <div className="flex items-center gap-3">
 
-                                                    <div className="flex size-11 items-center justify-center rounded-xl bg-[#2bb887]/15">
+                                                    <div className="flex size-11 items-center justify-center rounded-xl bg-[#10b981]/15">
                                                         <Flame className="size-5 text-[#70d5b7]" />
                                                     </div>
 
@@ -3392,7 +4034,7 @@ export default function Page() {
                                                         )
                                                     }
                                                 }}
-                                                className="flex items-center justify-center gap-2 rounded-xl bg-[#2bb887] py-3.5 text-sm font-bold text-[#062017] transition hover:bg-[#42d09e]"
+                                                className="flex items-center justify-center gap-2 rounded-xl bg-[#10b981] py-3.5 text-sm font-bold text-[#062017] transition hover:bg-[#34d399]"
                                             >
                                                 <Check className="size-4" />
                                                 Add to meals
@@ -3431,7 +4073,7 @@ export default function Page() {
                                         <button
                                             type="button"
                                             onClick={capturePhoto}
-                                            className="flex items-center justify-center gap-2 rounded-2xl bg-[#2bb887] py-4 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#42d09e]"
+                                            className="flex items-center justify-center gap-2 rounded-2xl bg-[#10b981] py-4 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#34d399]"
                                         >
                                             <Camera className="size-5" />
                                             Take photo
@@ -3529,7 +4171,7 @@ export default function Page() {
                                                 !imageBase64 ||
                                                 isAnalyzing
                                             }
-                                            className="flex items-center justify-center gap-2 rounded-2xl bg-[#2bb887] py-4 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.16)] transition hover:bg-[#42d09e] disabled:cursor-not-allowed disabled:opacity-40"
+                                            className="flex items-center justify-center gap-2 rounded-2xl bg-[#10b981] py-4 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.16)] transition hover:bg-[#34d399] disabled:cursor-not-allowed disabled:opacity-40"
                                         >
                                             {isAnalyzing ? (
                                                 <>
@@ -3680,11 +4322,11 @@ function AuthScreen({
     >
 }) {
     return (
-        <div className="min-h-screen bg-[#071411] p-4 text-white sm:p-6 lg:p-8">
-            <div className="mx-auto grid min-h-[calc(100vh-32px)] max-w-6xl overflow-hidden rounded-[32px] border border-white/10 bg-[#0d1f1a] shadow-2xl lg:grid-cols-2">
+        <div className="intizom-app intizom-screen-shell mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-zinc-950 p-4 text-white">
+            <div className="mx-auto grid min-h-[calc(100svh-2rem)] w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/80 shadow-2xl">
 
                 {/* LEFT SIDE */}
-                <div className="relative hidden overflow-hidden bg-[#163d32] p-10 lg:flex lg:flex-col lg:justify-between">
+                <div className="relative hidden overflow-hidden bg-[#163d32] p-10   ">
                     <div className="absolute -right-20 -top-20 size-72 rounded-full bg-emerald-400/10 blur-3xl" />
                     <div className="absolute -bottom-20 -left-20 size-72 rounded-full bg-teal-300/10 blur-3xl" />
 
@@ -3744,11 +4386,11 @@ function AuthScreen({
                 </div>
 
                 {/* RIGHT SIDE */}
-                <div className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
+                <div className="flex items-center justify-center p-6  ">
                     <div className="w-full max-w-md">
 
                         {/* Mobile logo */}
-                        <div className="mb-8 flex items-center gap-3 lg:hidden">
+                        <div className="mb-8 flex items-center gap-3 ">
                             <div className="flex size-10 items-center justify-center rounded-xl bg-[#183d32]">
                                 <HeartPulse className="size-5 text-emerald-300" />
                             </div>
@@ -3769,7 +4411,7 @@ function AuthScreen({
                                     : 'INTIZOM AI'}
                             </div>
 
-                            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                            <h1 className="text-3xl font-semibold tracking-tight ">
                                 {mode === 'login'
                                     ? copy.welcomeBack
                                     : copy.createAccount}
@@ -3790,7 +4432,7 @@ function AuthScreen({
                                     setMode('login')
                                 }
                                 className={`rounded-lg py-2.5 text-sm font-semibold transition ${mode === 'login'
-                                    ? 'bg-[#2bb887] text-[#062017]'
+                                    ? 'bg-[#10b981] text-[#062017]'
                                     : 'text-[#78968d]'
                                     }`}
                             >
@@ -3803,7 +4445,7 @@ function AuthScreen({
                                     setMode('register')
                                 }
                                 className={`rounded-lg py-2.5 text-sm font-semibold transition ${mode === 'register'
-                                    ? 'bg-[#2bb887] text-[#062017]'
+                                    ? 'bg-[#10b981] text-[#062017]'
                                     : 'text-[#78968d]'
                                     }`}
                             >
@@ -3920,7 +4562,7 @@ function AuthScreen({
                             type="button"
                             onClick={onSubmit}
                             disabled={loading}
-                            className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#2bb887] px-5 py-3.5 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#42d09e] disabled:cursor-wait disabled:opacity-60"
+                            className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#10b981] px-5 py-3.5 text-sm font-bold text-[#062017] shadow-[0_12px_30px_rgba(43,184,135,0.18)] transition hover:bg-[#34d399] disabled:cursor-wait disabled:opacity-60"
                         >
                             {loading ? 'Yuklanmoqda...' : mode === 'login' ? copy.signIn : copy.createOne}
                             {loading ? <Loader2 className="size-4 animate-spin" /> : mode === 'login' ? <LogIn className="size-4" /> : <UserPlus className="size-4" />}
@@ -4084,8 +4726,8 @@ function OnboardingScreen({
         }`
 
     return (
-        <div className="min-h-screen bg-[#071411] p-4 text-white sm:p-6">
-            <div className="mx-auto flex min-h-[calc(100vh-32px)] max-w-3xl flex-col rounded-[32px] border border-white/10 bg-[#0d1f1a] p-6 shadow-2xl sm:p-10">
+        <div className="intizom-app intizom-screen-shell mx-auto min-h-screen w-full max-w-md bg-zinc-950 p-4 text-white">
+            <div className="mx-auto flex min-h-[calc(100svh-2rem)] w-full max-w-md flex-col rounded-3xl border border-white/10 bg-zinc-900/80 p-5 shadow-2xl">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-400/10">
@@ -4143,7 +4785,7 @@ function OnboardingScreen({
                                 )}
                         </div>
 
-                        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                        <h1 className="text-3xl font-semibold tracking-tight ">
                             {step ===
                                 1 &&
                                 copy.age}
@@ -4262,7 +4904,7 @@ function OnboardingScreen({
 
                     {step ===
                         4 && (
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-3 ">
                                 <button
                                     onClick={() =>
                                         setGender(
@@ -4520,11 +5162,11 @@ function SuccessScreen({
                 : copy.maintain
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#071411] p-4 text-white sm:p-6">
+        <div className="intizom-app intizom-screen-shell relative mx-auto min-h-screen w-full max-w-md overflow-hidden bg-zinc-950 p-4 text-white">
             <div className="pointer-events-none absolute left-1/2 top-[-180px] size-[500px] -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
 
-            <div className="relative mx-auto flex min-h-[calc(100vh-32px)] max-w-5xl items-center justify-center">
-                <div className="w-full rounded-[36px] border border-white/10 bg-[#0d1f1a]/95 p-6 shadow-2xl sm:p-10 lg:p-14">
+            <div className="relative mx-auto flex min-h-[calc(100svh-2rem)] w-full max-w-md items-center justify-center">
+                <div className="w-full rounded-3xl border border-white/10 bg-zinc-900/95 p-5 shadow-2xl">
                     <div className="mx-auto max-w-3xl text-center">
                         <div className="relative mx-auto mb-7 flex size-20 items-center justify-center rounded-[26px] bg-emerald-400 text-[#062017] shadow-[0_0_50px_rgba(52,211,153,0.2)]">
                             <Trophy className="size-9" />
@@ -4538,13 +5180,13 @@ function SuccessScreen({
                             INTIZOM AI
                         </p>
 
-                        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">
+                        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] ">
                             {
                                 copy.congratulations
                             }
                         </h1>
 
-                        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#8eaaa1] sm:text-base">
+                        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#8eaaa1] ">
                             {
                                 copy.congratulationsSub
                             }
@@ -4558,7 +5200,7 @@ function SuccessScreen({
                         </div>
                     </div>
 
-                    <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mx-auto mt-8 grid w-full grid-cols-2 gap-3">
                         <SuccessStat
                             icon={
                                 Flame

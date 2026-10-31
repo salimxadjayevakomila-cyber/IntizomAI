@@ -1,18 +1,22 @@
- 'use client'
+  'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
 import {
     Bell,
     BellRing,
     Check,
+    CalendarDays,
     ChevronRight,
     Droplets,
+    HeartPulse,
     Globe2,
     Lock,
     LogOut,
     Moon,
     RotateCcw,
+    Ruler,
     Save,
+    Scale,
     Shield,
     Sun,
     Target,
@@ -69,7 +73,7 @@ export default function SettingsContent({
     onLogout,
     onReset,
 }: SettingsProps) {
-    const { language, setLanguage } = useLanguage()
+    const { language, setLanguage, t } = useLanguage()
 
     const [nameInput, setNameInput] = useState(profileName)
 
@@ -261,29 +265,166 @@ export default function SettingsContent({
                 ? 'Female'
                 : 'Not selected'
 
+    const displayName = profileName.trim() || 'User'
+    const initials = displayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    const weightValue = Number(weight)
+    const heightInMeters = Number(height) / 100
+    const bmi = weightValue > 0 && heightInMeters > 0
+        ? (weightValue / heightInMeters ** 2).toFixed(1)
+        : '—'
+
+    const profileStats = [
+        {
+            label: 'Weight',
+            value: weight || '—',
+            unit: weight ? 'kg' : '',
+            icon: Scale,
+            tone: 'bg-emerald-400/10 text-emerald-300',
+        },
+        {
+            label: 'Height',
+            value: height || '—',
+            unit: height ? 'cm' : '',
+            icon: Ruler,
+            tone: 'bg-sky-400/10 text-sky-300',
+        },
+        {
+            label: 'BMI',
+            value: bmi,
+            unit: '',
+            icon: HeartPulse,
+            tone: 'bg-amber-400/10 text-amber-300',
+        },
+        {
+            label: 'Age',
+            value: age || '—',
+            unit: age ? 'yrs' : '',
+            icon: CalendarDays,
+            tone: 'bg-violet-400/10 text-violet-300',
+        },
+    ]
+
+    const profileActions = [
+        {
+            href: '#profile-goals',
+            icon: Target,
+            title: t('settings.goals'),
+            description: t('settings.goals.desc'),
+        },
+        {
+            href: '#profile-weight',
+            icon: Scale,
+            title: t('settings.currentWeight'),
+            description: weight ? `${weight} kg` : 'Not set',
+        },
+        {
+            href: '#profile-edit',
+            icon: User,
+            title: t('settings.editProfile'),
+            description: t('settings.account.desc'),
+        },
+    ]
+
     return (
-        <div className="space-y-6 pb-10">
+        <div className="flex flex-col gap-4 pb-32 text-white">
 
             {/* Header */}
             <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400">
                     INTIZOM AI
                 </p>
 
-                <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#182522]">
-                    Settings
+                <h1 className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-white">
+                    Profile
                 </h1>
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#71827c]">
-                    Manage your profile, goals, preferences and
-                    account settings.
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+                    Your health profile, goals and account preferences.
                 </p>
             </div>
 
+            <section className="rounded-[28px] border border-emerald-900/40 bg-[#0d1a12] p-5" aria-label="Profile summary">
+                <div className="flex items-center gap-4">
+                    <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-400/10 text-lg font-bold text-emerald-300">
+                        {initials}
+                    </div>
+                    <div className="min-w-0">
+                        <h2 className="truncate text-xl font-semibold tracking-tight text-white">
+                            {displayName}
+                        </h2>
+                        <p className="mt-1 truncate text-sm text-zinc-400">
+                            {goalLabel} · {activityLabel}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-4 gap-2">
+                    {profileStats.map((stat) => {
+                        const StatIcon = stat.icon
+
+                        return (
+                            <div key={stat.label} className="min-w-0 rounded-2xl border border-white/[0.06] bg-white/[0.025] px-2 py-3">
+                                <span className={`flex size-8 items-center justify-center rounded-xl ${stat.tone}`}>
+                                    <StatIcon className="size-4" aria-hidden="true" />
+                                </span>
+                                <p className="mt-2 truncate text-[10px] font-medium text-zinc-500">
+                                    {stat.label}
+                                </p>
+                                <p className="mt-0.5 truncate text-sm font-semibold text-white">
+                                    {stat.value}
+                                    {stat.unit && <span className="ml-0.5 text-[10px] font-medium text-zinc-400">{stat.unit}</span>}
+                                </p>
+                            </div>
+                        )
+                    })}
+                </div>
+            </section>
+
+            <section className="rounded-2xl border border-white/10 bg-[#0e1913] p-4" aria-label={t('settings.account')}>
+                <div className="mb-3 flex items-center gap-2">
+                    <User className="size-4 text-emerald-300" aria-hidden="true" />
+                    <h2 className="text-sm font-semibold text-white">
+                        {t('settings.account')}
+                    </h2>
+                </div>
+                <div className="flex flex-col gap-2">
+                    {profileActions.map((action) => {
+                        const ActionIcon = action.icon
+
+                        return (
+                            <a
+                                key={action.href}
+                                href={action.href}
+                                className="flex scroll-mt-28 items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-3 transition hover:bg-white/[0.06]"
+                            >
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
+                                    <ActionIcon className="size-4" aria-hidden="true" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-semibold text-white">
+                                        {action.title}
+                                    </span>
+                                    <span className="mt-0.5 block truncate text-xs text-zinc-500">
+                                        {action.description}
+                                    </span>
+                                </span>
+                                <ChevronRight className="size-4 shrink-0 text-zinc-500" aria-hidden="true" />
+                            </a>
+                        )
+                    })}
+                </div>
+            </section>
+
             {/* Saved message */}
             {showSaved && (
-                <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-emerald-100">
+                <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-emerald-400/15">
                         <Check className="size-4" />
                     </div>
 
@@ -293,11 +434,12 @@ export default function SettingsContent({
 
             {/* Profile */}
             <SettingsCard
+                id="profile-edit"
                 icon={User}
                 title="Profile"
                 description="Update your personal information."
             >
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-5 ">
                     <Field
                         label="Name"
                         value={nameInput}
@@ -331,11 +473,11 @@ export default function SettingsContent({
                 </div>
 
                 <div className="mt-5">
-                    <p className="mb-2 text-xs font-semibold text-[#536760]">
+                    <p className="mb-2 text-xs font-semibold text-zinc-400">
                         Gender
                     </p>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-3 ">
                         <ChoiceButton
                             selected={gender === 'male'}
                             onClick={() =>
@@ -356,19 +498,19 @@ export default function SettingsContent({
                     </div>
                 </div>
 
-                <div className="mt-5 rounded-2xl bg-[#f5f8f7] p-4">
+                <div className="mt-5 rounded-2xl border border-white/10 bg-[#111d17] p-4">
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                            <p className="text-xs font-semibold text-[#72817c]">
+                            <p className="text-xs font-semibold text-zinc-500">
                                 Current profile
                             </p>
 
-                            <p className="mt-1 text-sm font-bold text-[#182522]">
+                            <p className="mt-1 text-sm font-semibold text-white">
                                 {profileName || 'User'}
                             </p>
                         </div>
 
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
                             <User className="size-4" />
                         </div>
                     </div>
@@ -377,6 +519,7 @@ export default function SettingsContent({
 
             {/* Goals */}
             <SettingsCard
+                id="profile-goals"
                 icon={Target}
                 title="Goals"
                 description="Choose what you want to focus on."
@@ -416,7 +559,7 @@ export default function SettingsContent({
                 </div>
 
                 <div className="mt-5">
-                    <p className="mb-2 text-xs font-semibold text-[#536760]">
+                    <p className="mb-2 text-xs font-semibold text-zinc-400">
                         Activity level
                     </p>
 
@@ -467,11 +610,12 @@ export default function SettingsContent({
 
             {/* Health summary */}
             <SettingsCard
+                id="profile-health"
                 icon={Droplets}
                 title="Health profile"
                 description="Your current profile information."
             >
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-3  ">
                     <InfoBox
                         label="Age"
                         value={
@@ -505,7 +649,7 @@ export default function SettingsContent({
                     />
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 ">
                     <InfoBox
                         label="Goal"
                         value={goalLabel}
@@ -538,7 +682,7 @@ export default function SettingsContent({
                     }
                 />
 
-                <div className="my-4 h-px bg-[#edf1ef]" />
+                <div className="my-4 h-px bg-white/10" />
 
                 <ToggleRow
                     icon={Utensils}
@@ -555,7 +699,7 @@ export default function SettingsContent({
                 title="Language"
                 description="Choose your preferred interface language."
             >
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 ">
                     <LanguageButton
                         code="uz"
                         label="O‘zbekcha"
@@ -590,8 +734,8 @@ export default function SettingsContent({
                     />
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-xs leading-5 text-amber-700">
+                <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4">
+                    <p className="text-xs leading-5 text-amber-200">
                         Language preference is saved locally.
                         Your main language context controls the
                         actual application translations.
@@ -609,7 +753,7 @@ export default function SettingsContent({
                 title="Appearance"
                 description="Choose how INTIZOM AI should look."
             >
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 ">
                     <ThemeButton
                         icon={Moon}
                         title="Dark"
@@ -635,8 +779,8 @@ export default function SettingsContent({
                     />
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs leading-5 text-slate-600">
+                <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs leading-5 text-zinc-400">
                         Appearance preference is saved. The
                         current dashboard keeps its existing
                         visual theme.
@@ -650,7 +794,7 @@ export default function SettingsContent({
                 title="Privacy & security"
                 description="Keep your account information protected."
             >
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                     <PrivacyRow
                         icon={Lock}
                         title="Personal information"
@@ -677,40 +821,40 @@ export default function SettingsContent({
             </div>
 
             {/* Danger zone */}
-            <div className="rounded-3xl border border-red-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-red-400/20 bg-[#111713] p-5 shadow-sm">
                 <div className="flex items-start gap-4">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-400/10 text-red-300">
                         <Shield className="size-5" />
                     </div>
 
                     <div>
-                        <h2 className="font-bold text-[#182522]">
+                        <h2 className="font-semibold text-white">
                             Account actions
                         </h2>
 
-                        <p className="mt-1 text-sm leading-6 text-[#71827c]">
+                        <p className="mt-1 text-sm leading-6 text-zinc-400">
                             These actions affect your current
                             INTIZOM AI session.
                         </p>
                     </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid gap-3 ">
                     <button
                         onClick={() =>
                             setShowResetModal(true)
                         }
-                        className="flex items-center justify-between rounded-2xl border border-red-100 bg-red-50/50 p-4 text-left transition hover:bg-red-50"
+                        className="flex items-center justify-between rounded-2xl border border-red-400/20 bg-red-400/5 p-4 text-left transition hover:bg-red-400/10"
                     >
                         <div className="flex items-center gap-3">
                             <RotateCcw className="size-4 text-red-500" />
 
                             <div>
-                                <p className="text-sm font-bold text-red-700">
+                                <p className="text-sm font-semibold text-red-300">
                                     Reset data
                                 </p>
 
-                                <p className="mt-0.5 text-xs text-red-500/70">
+                                <p className="mt-0.5 text-xs text-red-300/70">
                                     Clear your current progress
                                 </p>
                             </div>
@@ -723,23 +867,23 @@ export default function SettingsContent({
                         onClick={() =>
                             setShowLogoutModal(true)
                         }
-                        className="flex items-center justify-between rounded-2xl border border-[#e5ebe8] bg-[#f8faf9] p-4 text-left transition hover:bg-[#f1f5f3]"
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:bg-white/[0.07]"
                     >
                         <div className="flex items-center gap-3">
-                            <LogOut className="size-4 text-[#587069]" />
+                            <LogOut className="size-4 text-zinc-300" />
 
                             <div>
-                                <p className="text-sm font-bold text-[#25332f]">
+                                <p className="text-sm font-semibold text-zinc-100">
                                     Log out
                                 </p>
 
-                                <p className="mt-0.5 text-xs text-[#82918c]">
+                                <p className="mt-0.5 text-xs text-zinc-500">
                                     Return to the login screen
                                 </p>
                             </div>
                         </div>
 
-                        <ChevronRight className="size-4 text-[#9aa8a3]" />
+                        <ChevronRight className="size-4 text-zinc-500" />
                     </button>
                 </div>
             </div>
@@ -787,25 +931,27 @@ function SettingsCard({
     title,
     description,
     children,
+    id,
 }: {
     icon: typeof User
     title: string
     description: string
     children: ReactNode
+    id?: string
 }) {
     return (
-        <section className="rounded-3xl border border-[#e4ebe8] bg-white p-5 shadow-sm sm:p-6">
+        <section id={id} className="scroll-mt-28 rounded-3xl border border-white/10 bg-[#0e1913] p-4 shadow-sm sm:p-5">
             <div className="flex items-start gap-4">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf7f2] text-[#2b8870]">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300">
                     <Icon className="size-5" />
                 </div>
 
                 <div>
-                    <h2 className="font-bold text-[#182522]">
+                    <h2 className="font-semibold text-white">
                         {title}
                     </h2>
 
-                    <p className="mt-1 text-sm leading-5 text-[#7b8a85]">
+                    <p className="mt-1 text-sm leading-5 text-zinc-400">
                         {description}
                     </p>
                 </div>
@@ -835,20 +981,23 @@ function Field({
     placeholder: string
     type?: string
 }) {
+    const fieldId = `profile-${label.toLowerCase().replace(/\s+/g, '-')}`
+
     return (
         <div>
-            <label className="mb-2 block text-xs font-semibold text-[#536760]">
+            <label htmlFor={fieldId} className="mb-2 block text-xs font-semibold text-zinc-400">
                 {label}
             </label>
 
             <input
+                id={fieldId}
                 type={type}
                 value={value}
                 onChange={(e) =>
                     onChange(e.target.value)
                 }
                 placeholder={placeholder}
-                className="h-12 w-full rounded-xl border border-[#dfe8e4] bg-[#fbfcfc] px-4 text-sm font-medium text-[#182522] outline-none transition placeholder:text-[#a0ada8] focus:border-emerald-400 focus:bg-white"
+                className="h-12 w-full rounded-xl border border-white/10 bg-[#111d17] px-4 text-sm font-medium text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-emerald-400 focus:bg-[#14231b]"
             />
         </div>
     )
@@ -875,23 +1024,23 @@ function ChoiceButton({
             onClick={onClick}
             className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition ${
                 selected
-                    ? 'border-emerald-400/60 bg-emerald-50'
-                    : 'border-[#e3ebe7] bg-[#fbfcfc] hover:border-[#cbd8d3] hover:bg-white'
+                    ? 'border-emerald-400/50 bg-emerald-400/10'
+                    : 'border-white/10 bg-[#111d17] hover:border-white/20 hover:bg-[#17251d]'
             }`}
         >
             <div>
                 <p
                     className={`text-sm font-bold ${
                         selected
-                            ? 'text-emerald-700'
-                            : 'text-[#263530]'
+                            ? 'text-emerald-300'
+                            : 'text-zinc-200'
                     }`}
                 >
                     {children}
                 </p>
 
                 {description && (
-                    <p className="mt-1 text-xs text-[#82918c]">
+                    <p className="mt-1 text-xs text-zinc-500">
                         {description}
                     </p>
                 )}
@@ -901,7 +1050,7 @@ function ChoiceButton({
                 className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${
                     selected
                         ? 'border-emerald-500 bg-emerald-500 text-white'
-                        : 'border-[#d5dfdb] bg-white'
+                        : 'border-white/15 bg-[#17251d]'
                 }`}
             >
                 {selected && (
@@ -924,12 +1073,12 @@ function InfoBox({
     value: string
 }) {
     return (
-        <div className="rounded-2xl border border-[#e7eeeb] bg-[#f8faf9] p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#87958f]">
+        <div className="rounded-2xl border border-white/10 bg-[#111d17] p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                 {label}
             </p>
 
-            <p className="mt-2 truncate text-sm font-bold text-[#263530]">
+            <p className="mt-2 truncate text-sm font-semibold text-zinc-100">
                 {value}
             </p>
         </div>
@@ -956,16 +1105,16 @@ function ToggleRow({
     return (
         <div className="flex items-center justify-between gap-5">
             <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f2f7f5] text-[#59736a]">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
                     <Icon className="size-4" />
                 </div>
 
                 <div>
-                    <p className="text-sm font-bold text-[#263530]">
+                    <p className="text-sm font-semibold text-zinc-100">
                         {title}
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-[#82918c]">
+                    <p className="mt-1 text-xs leading-5 text-zinc-500">
                         {description}
                     </p>
                 </div>
@@ -979,8 +1128,8 @@ function ToggleRow({
                 aria-label={title}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition ${
                     checked
-                        ? 'bg-emerald-500'
-                        : 'bg-[#d7e0dc]'
+                        ? 'bg-emerald-400'
+                        : 'bg-white/15'
                 }`}
             >
                 <span
@@ -1016,8 +1165,8 @@ function LanguageButton({
             onClick={onClick}
             className={`flex items-center justify-between rounded-2xl border p-4 transition ${
                 selected
-                    ? 'border-emerald-400/60 bg-emerald-50'
-                    : 'border-[#e3ebe7] bg-[#fbfcfc] hover:border-[#cbd8d3]'
+                    ? 'border-emerald-400/50 bg-emerald-400/10'
+                    : 'border-white/10 bg-[#111d17] hover:border-white/20'
             }`}
         >
             <div className="flex items-center gap-3">
@@ -1025,7 +1174,7 @@ function LanguageButton({
                     className={`flex size-9 items-center justify-center rounded-xl text-xs font-bold uppercase ${
                         selected
                             ? 'bg-emerald-500 text-white'
-                            : 'bg-[#edf3f0] text-[#657870]'
+                            : 'bg-white/[0.06] text-zinc-400'
                     }`}
                 >
                     {code}
@@ -1034,8 +1183,8 @@ function LanguageButton({
                 <span
                     className={`text-sm font-bold ${
                         selected
-                            ? 'text-emerald-700'
-                            : 'text-[#263530]'
+                            ? 'text-emerald-300'
+                            : 'text-zinc-200'
                     }`}
                 >
                     {label}
@@ -1043,7 +1192,7 @@ function LanguageButton({
             </div>
 
             {selected && (
-                <Check className="size-4 text-emerald-600" />
+                <Check className="size-4 text-emerald-300" />
             )}
         </button>
     )
@@ -1072,8 +1221,8 @@ function ThemeButton({
             onClick={onClick}
             className={`flex items-center justify-between rounded-2xl border p-4 text-left transition ${
                 selected
-                    ? 'border-emerald-400/60 bg-emerald-50'
-                    : 'border-[#e3ebe7] bg-[#fbfcfc] hover:border-[#cbd8d3]'
+                    ? 'border-emerald-400/50 bg-emerald-400/10'
+                    : 'border-white/10 bg-[#111d17] hover:border-white/20'
             }`}
         >
             <div className="flex items-center gap-3">
@@ -1081,25 +1230,25 @@ function ThemeButton({
                     className={`flex size-10 items-center justify-center rounded-xl ${
                         selected
                             ? 'bg-emerald-500 text-white'
-                            : 'bg-[#edf3f0] text-[#667770]'
+                            : 'bg-white/[0.06] text-zinc-400'
                     }`}
                 >
                     <Icon className="size-4" />
                 </div>
 
                 <div>
-                    <p className="text-sm font-bold text-[#263530]">
+                    <p className="text-sm font-semibold text-zinc-100">
                         {title}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#82918c]">
+                    <p className="mt-1 text-xs text-zinc-500">
                         {description}
                     </p>
                 </div>
             </div>
 
             {selected && (
-                <Check className="size-4 text-emerald-600" />
+                <Check className="size-4 text-emerald-300" />
             )}
         </button>
     )
@@ -1119,17 +1268,17 @@ function PrivacyRow({
     description: string
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-2xl bg-[#f8faf9] p-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#61766e] shadow-sm">
+        <div className="flex items-center gap-3 rounded-2xl bg-[#111d17] p-4">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300">
                 <Icon className="size-4" />
             </div>
 
             <div>
-                <p className="text-sm font-bold text-[#263530]">
+                <p className="text-sm font-semibold text-zinc-100">
                     {title}
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-[#82918c]">
+                <p className="mt-1 text-xs leading-5 text-zinc-500">
                     {description}
                 </p>
             </div>
@@ -1162,13 +1311,13 @@ function ConfirmModal({
 }) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white p-6 shadow-2xl">
+            <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0e1913] p-6 shadow-2xl">
                 <div className="flex items-start justify-between gap-4">
                     <div
                         className={`flex size-12 items-center justify-center rounded-2xl ${
                             danger
-                                ? 'bg-red-50 text-red-500'
-                                : 'bg-[#eaf7f2] text-[#2b8870]'
+                                ? 'bg-red-400/10 text-red-300'
+                                : 'bg-emerald-400/10 text-emerald-300'
                         }`}
                     >
                         <Icon className="size-5" />
@@ -1177,17 +1326,17 @@ function ConfirmModal({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex size-9 items-center justify-center rounded-xl text-[#8a9893] transition hover:bg-[#f3f6f5] hover:text-[#263530]"
+                        className="flex size-9 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-white/10 hover:text-white"
                     >
                         <X className="size-4" />
                     </button>
                 </div>
 
-                <h3 className="mt-5 text-xl font-bold text-[#182522]">
+                <h3 className="mt-5 text-xl font-semibold text-white">
                     {title}
                 </h3>
 
-                <p className="mt-2 text-sm leading-6 text-[#71827c]">
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
                     {description}
                 </p>
 
@@ -1195,7 +1344,7 @@ function ConfirmModal({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 rounded-xl border border-[#dfe7e3] px-4 py-3 text-sm font-bold text-[#52645d] transition hover:bg-[#f6f8f7]"
+                        className="flex-1 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.06]"
                     >
                         {cancelText}
                     </button>

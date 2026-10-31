@@ -15,8 +15,8 @@ import {
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 
- const API_URL =
-    'https://intizom-ai-backend.onrender.com'
+const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'
 
 type TrainerPreferences = {
     fitnessLevel: string
@@ -457,10 +457,6 @@ export default function AITrainer() {
                     : 'uz'
         ]
 
-    // ============================================================
-    // AI TRAINER
-    // ============================================================
-
     const generateTrainerPlan =
         async () => {
             try {
@@ -500,7 +496,6 @@ export default function AITrainer() {
 
     useEffect(() => {
         generateTrainerPlan()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const updatePreference = (
@@ -681,10 +676,6 @@ export default function AITrainer() {
     const planSections =
         getPlanSections()
 
-    // ============================================================
-    // AI CHAT
-    // ============================================================
-
     const sendChatMessage =
         async () => {
             const message =
@@ -767,14 +758,8 @@ export default function AITrainer() {
         }
     }
 
-    // ============================================================
-    // UI
-    // ============================================================
-
     return (
         <div className="w-full space-y-6 text-white">
-            {/* HEADER */}
-
             <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -816,8 +801,6 @@ export default function AITrainer() {
                 </div>
             </section>
 
-            {/* SAFE NOTICE */}
-
             <section className="rounded-2xl border border-[#70d5b7]/20 bg-[#70d5b7]/5 p-4 sm:p-5">
                 <div className="flex items-start gap-3">
                     <ShieldCheck
@@ -836,8 +819,6 @@ export default function AITrainer() {
                     </div>
                 </div>
             </section>
-
-            {/* PREFERENCES */}
 
             <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
                 <div className="mb-5">
@@ -1018,8 +999,6 @@ export default function AITrainer() {
                 </button>
             </section>
 
-            {/* AI PLAN */}
-
             <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
                 <div className="mb-5 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#70d5b7]/10">
@@ -1134,10 +1113,6 @@ export default function AITrainer() {
                     )}
             </section>
 
-            {/* ================================================== */}
-            {/* AI CHAT - SAME SECTION / SAME FILE                */}
-            {/* ================================================== */}
-
             <section className="rounded-3xl border border-white/10 bg-[#111a1d] p-5 sm:p-7">
                 <div className="mb-5 flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#70d5b7]/10">
@@ -1157,8 +1132,6 @@ export default function AITrainer() {
                         </p>
                     </div>
                 </div>
-
-                {/* CHAT MESSAGES */}
 
                 <div className="min-h-[280px] max-h-[520px] space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-[#0b1215] p-4">
                     {chatMessages.length === 0 && (
@@ -1229,8 +1202,6 @@ export default function AITrainer() {
                     </div>
                 )}
 
-                {/* CHAT INPUT */}
-
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                     <input
                         type="text"
@@ -1269,10 +1240,6 @@ export default function AITrainer() {
         </div>
     )
 }
-
-// ============================================================
-// PREFERENCE SELECT
-// ============================================================
 
 function PreferenceSelect({
     label,

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">IntizomAI</string>
+    <string name="title_activity_main">IntizomAI</string>
+    <string name="package_name">com.komila.intizomai</string>
+    <string name="custom_url_scheme">com.komila.intizomai</string>
+</resources>

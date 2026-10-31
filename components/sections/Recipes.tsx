@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
@@ -1706,26 +1706,26 @@ export default function Recipes() {
 
   return (
    <main className="min-h-screen w-full bg-white text-slate-900 !m-0 !p-0">
-      <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1500px] px-4 py-6  ">
         {/* HEADER */}
         <div className="mb-7">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4   ">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 ">
                 {copy.title}
               </h1>
 
-              <p className="mt-2 text-sm text-slate-500 sm:text-base">
+              <p className="mt-2 text-sm text-slate-500 ">
                 {copy.subtitle}
               </p>
             </div>
 
             {/* DISCOVER / FAVORITES */}
-            <div className="flex w-full rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-fit">
+            <div className="flex w-full rounded-xl border border-slate-200 bg-slate-50 p-1 ">
               <button
                 type="button"
                 onClick={() => setActiveTab('discover')}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition sm:flex-none ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition  ${
                   activeTab === 'discover'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-500 hover:text-slate-900'
@@ -1738,7 +1738,7 @@ export default function Recipes() {
               <button
                 type="button"
                 onClick={() => setActiveTab('favorites')}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition sm:flex-none ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition  ${
                   activeTab === 'favorites'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-500 hover:text-slate-900'
@@ -1759,7 +1759,7 @@ export default function Recipes() {
         </div>
 
         {/* SEARCH + CALORIE */}
-        <div className="mb-6 flex flex-col gap-3 lg:flex-row">
+        <div className="mb-6 flex flex-col gap-3 ">
           <div className="relative flex-1">
             <Search
               size={19}
@@ -1776,7 +1776,7 @@ export default function Recipes() {
             />
           </div>
 
-          <div className="relative lg:w-[220px]">
+          <div className="relative ">
             <Flame
               size={18}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -1849,7 +1849,7 @@ export default function Recipes() {
 
         {/* RECIPE GRID */}
         {filteredRecipes.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2">
             {filteredRecipes.map((recipe) => {
               const isFavorite = favorites.includes(recipe.id)
 
@@ -1967,7 +1967,7 @@ export default function Recipes() {
       {/* RECIPE MODAL */}
       {selectedRecipe && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm "
           onClick={() => setSelectedRecipe(null)}
         >
           <div
@@ -2001,15 +2001,15 @@ export default function Recipes() {
               </div>
             </div>
 
-            <div className="p-5 sm:p-7">
+            <div className="p-5 ">
               {/* TITLE */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-4   ">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                  <h2 className="text-2xl font-bold text-slate-900 ">
                     {selectedRecipe.title}
                   </h2>
 
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 ">
                     {selectedRecipe.description}
                   </p>
                 </div>
@@ -2043,7 +2043,7 @@ export default function Recipes() {
               </div>
 
               {/* STATS */}
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-6 grid grid-cols-2 gap-3 ">
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">
                     {copy.kcal}
@@ -2086,7 +2086,7 @@ export default function Recipes() {
               </div>
 
               {/* INGREDIENTS + STEPS */}
-              <div className="mt-8 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+              <div className="mt-8 grid gap-8 ">
                 <section>
                   <h3 className="text-lg font-semibold text-slate-900">
                     {copy.ingredients}

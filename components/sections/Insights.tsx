@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import React, {
   useEffect,
@@ -651,7 +651,7 @@ function StatCard({
   children,
 }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] transition hover:border-emerald-700/60 sm:p-6">
+    <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-5 shadow-[0_0_30px_rgba(16,185,129,0.08)] transition hover:border-emerald-700/60 ">
       <div className="flex items-start justify-between">
         <div
           className={`flex size-10 items-center justify-center rounded-xl ${accent}`}
@@ -743,9 +743,9 @@ export function WeeklyChart({
     )
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="grid gap-5 ">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] ">
+        <div className="flex flex-col gap-3   ">
           <div>
             <h2 className="text-lg font-semibold text-white">
               {t.caloriesStepProgress}
@@ -931,7 +931,7 @@ export function WeeklyChart({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] sm:p-6">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] ">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold text-white">
@@ -1069,8 +1069,8 @@ export function MacroChart({
     )
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_1.2fr]">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] sm:p-6">
+    <div className="grid gap-5 ">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] ">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold text-white">
@@ -1199,7 +1199,7 @@ export function MacroChart({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] sm:p-6">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.06)] ">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold text-white">
@@ -1360,7 +1360,7 @@ export function AIInsights() {
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 ">
       {translatedInsights.map(
         (insight) => {
           const Icon =
@@ -1374,7 +1374,7 @@ export function AIInsights() {
           return (
             <article
               key={insight.id}
-              className={`rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.05)] ring-1 ${tone.ring} transition hover:border-emerald-700/50 sm:p-6`}
+              className={`rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-[0_0_30px_rgba(16,185,129,0.05)] ring-1 ${tone.ring} transition hover:border-emerald-700/50 `}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -1641,7 +1641,7 @@ export default function Insights() {
   return (
     <div className="mx-auto max-w-[1100px]">
       {/* Header */}
-      <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <div className="mb-7 flex flex-col justify-between gap-4  ">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
             <Sparkles className="size-3.5" />
@@ -1649,7 +1649,7 @@ export default function Insights() {
             {t.aiSmartInsights}
           </div>
 
-          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white ">
             {t.weeklyInsights}
           </h1>
 
@@ -1666,7 +1666,7 @@ export default function Insights() {
       </div>
 
       {/* Stat cards */}
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4  ">
         <StatCard
           icon={Flame}
           label={

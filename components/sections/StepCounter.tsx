@@ -1,4 +1,4 @@
- 'use client'
+  'use client'
 
 import React, { useEffect, useState } from 'react'
 import {
@@ -524,7 +524,7 @@ export default function StepCounter() {
           {copy.badge}
         </div>
 
-        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[38px]">
+        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white ">
           {copy.title}
         </h1>
 
@@ -544,9 +544,9 @@ export default function StepCounter() {
       ) : (
         <>
           {/* Main grid */}
-          <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
+          <div className="grid gap-5 ">
             {/* Circular progress + stats */}
-            <div className="flex flex-col items-center rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-8">
+            <div className="flex flex-col items-center rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
               <CircularProgress
                 value={steps}
                 max={goal}
@@ -603,7 +603,7 @@ export default function StepCounter() {
             </div>
 
             {/* Hourly bar chart */}
-            <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
+            <div className="rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-white">
@@ -679,7 +679,7 @@ export default function StepCounter() {
           </div>
 
           {/* Activity log */}
-          <div className="mt-5 rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] sm:p-7">
+          <div className="mt-5 rounded-2xl border border-emerald-900/40 bg-gradient-to-br from-[#0f241d] to-[#0b1a15] p-6 shadow-[0_0_30px_rgba(16,185,129,0.08)] ">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-white">
